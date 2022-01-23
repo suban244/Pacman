@@ -1,0 +1,7 @@
+build
+.cache
+proposal/proposal.aux
+proposal/proposal.fls
+proposal/proposal.log
+proposal/proposal.synctex.gz
+proposal/proposal.fdb_latexmk
