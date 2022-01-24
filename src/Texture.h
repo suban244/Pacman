@@ -33,6 +33,8 @@ public:
                 SDL_Point *center = NULL,
                 SDL_RendererFlip flip = SDL_FLIP_NONE);
   void render(int x, int y);
+
+  static void DrawFillCircle(SDL_Renderer *renderer, int x, int y, int radius);
   void clean();
 
 private:

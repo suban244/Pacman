@@ -16,11 +16,13 @@ struct EntityLocation {
   short blockX, blockY; // GRID_HEIGHT * GRID_WIDTH
   short offsetX,
       offsetY; // 0 - 5, once you cross the offset, you get to new block
+  static int offsetMax;
 
   EntityLocation(int startX, int startY);
-  void move(bool positiveDirection, bool XDirection);
+  bool move(bool positiveDirection, bool XDirection);
   void calculateCoordinateToRender(SDL_Rect &dest, int startPosX, int startPosY,
                                    int blockWidth);
+  bool atCenter();
 };
 
 class Grid {
@@ -29,5 +31,7 @@ class Grid {
 
 public:
   Grid();
+  static bool areConnected(Node *n1, Node *n2);
+  Node *getNode(int i, int j);
   friend class Pacman;
 };
