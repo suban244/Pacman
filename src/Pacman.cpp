@@ -8,7 +8,7 @@
  */
 
 Pacman::Pacman(StateMachine *s) : GameState(s), pacmanLocation(1, 1) {}
-int Pacman::BLOCK_SIZE = 30;
+int Pacman::BLOCK_SIZE = 40;
 int Pacman::gridStartPosX = WINDOW_WIDTH / 10 * 3;
 int Pacman::gridStartPosY = WINDOW_HEIGHT / 10;
 int Pacman::pacmanSpriteSize = 80; // Becasue each sprite is 80 x 80
@@ -35,13 +35,24 @@ void Pacman::render() {
       case 0:
         SDL_SetRenderDrawColor(Game::renderer, 0, 200, 50, 255);
         break;
-      case 1:
-        SDL_SetRenderDrawColor(Game::renderer, 0, 100, 0, 255);
-        break;
       default:
+        SDL_SetRenderDrawColor(Game::renderer, 0, 100, 0, 255);
         break;
       }
       SDL_RenderFillRect(Game::renderer, &boxRect);
+
+      SDL_SetRenderDrawColor(Game::renderer, 255, 255, 255, 255);
+      switch (gameGrid.nodes[i][j].state) {
+      case 2:
+        Texture::DrawFillCircle(Game::renderer, boxRect.x + boxRect.w / 2,
+                                boxRect.y + boxRect.w / 2, 2);
+        break;
+      case 3:
+        Texture::DrawFillCircle(Game::renderer, boxRect.x + boxRect.w / 2,
+                                boxRect.y + boxRect.w / 2, 5);
+        break;
+      }
+
       boxRect.x += BLOCK_SIZE;
     }
     boxRect.x = gridStartPosX;
@@ -53,27 +64,34 @@ void Pacman::render() {
 }
 void Pacman::update() {
   if (pacmanLocation.atCenter()) {
-    pacmanDirection = pacmanNextDirection;
+    if (canMove(pacmanNextDirection)) {
+
+      pacmanDirection = pacmanNextDirection;
+      bool XDirection = (pacmanDirection == DirectionLeft ||
+                         pacmanDirection == DirectionRight)
+                            ? true
+                            : false;
+      bool positiveDirection = (pacmanDirection == DirectionDown ||
+                                pacmanDirection == DirectionRight)
+                                   ? true
+                                   : false;
+      pacmanLocation.move(positiveDirection, XDirection);
+    } else
+      pacmanNextDirection = pacmanDirection;
+  } else {
+    if (canMove(pacmanDirection)) {
+      bool XDirection = (pacmanDirection == DirectionLeft ||
+                         pacmanDirection == DirectionRight)
+                            ? true
+                            : false;
+      bool positiveDirection = (pacmanDirection == DirectionDown ||
+                                pacmanDirection == DirectionRight)
+                                   ? true
+                                   : false;
+      pacmanLocation.move(positiveDirection, XDirection);
+    }
   }
-  // bool blockChange = false;
-  switch (pacmanDirection) {
-  case DirectionUp:
-    if (canMove(DirectionUp))
-      pacmanLocation.move(false, false);
-    break;
-  case DirectionLeft:
-    if (canMove(DirectionLeft))
-      pacmanLocation.move(false, true);
-    break;
-  case DirectionDown:
-    if (canMove(DirectionDown))
-      pacmanLocation.move(true, false);
-    break;
-  case DirectionRight:
-    if (canMove(DirectionRight))
-      pacmanLocation.move(true, true);
-    break;
-  }
+
   animationCount++;
   pacmanSrcRect.x = 80 * ((animationCount / 10) % 3);
 }
@@ -82,33 +100,16 @@ void Pacman::handleInput(SDL_Event &e) {
   case SDL_KEYDOWN:
     switch (e.key.keysym.sym) {
     case SDLK_w:
-      if (canMove(DirectionUp)) {
-        pacmanDirection = DirectionUp;
-        pacmanNextDirection = DirectionUp;
-
-      } else if (canMove(DirectionUp, false))
-        pacmanNextDirection = DirectionUp;
+      pacmanNextDirection = DirectionUp;
       break;
     case SDLK_a:
-      if (canMove(DirectionLeft)) {
-        pacmanDirection = DirectionLeft;
-        pacmanNextDirection = DirectionLeft;
-      } else if (canMove(DirectionLeft, false))
-        pacmanNextDirection = DirectionLeft;
+      pacmanNextDirection = DirectionLeft;
       break;
     case SDLK_s:
-      if (canMove(DirectionDown)) {
-        pacmanDirection = DirectionDown;
-        pacmanNextDirection = DirectionDown;
-      } else if (canMove(DirectionDown, false))
-        pacmanNextDirection = DirectionDown;
+      pacmanNextDirection = DirectionDown;
       break;
     case SDLK_d:
-      if (canMove(DirectionRight)) {
-        pacmanDirection = DirectionRight;
-        pacmanNextDirection = DirectionRight;
-      } else if (canMove(DirectionRight, false))
-        pacmanNextDirection = DirectionRight;
+      pacmanNextDirection = DirectionRight;
       break;
     default:
       break;
