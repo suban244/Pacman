@@ -7,7 +7,8 @@
  *
  */
 
-Pacman::Pacman(StateMachine *s) : GameState(s), pacmanLocation(1, 1) {}
+Pacman::Pacman(StateMachine *s)
+    : GameState(s), pacmanLocation(1, 1), e1(1, 10) {}
 int Pacman::BLOCK_SIZE = 40;
 int Pacman::gridStartPosX = WINDOW_WIDTH / 10 * 3;
 int Pacman::gridStartPosY = WINDOW_HEIGHT / 10;
@@ -19,9 +20,10 @@ void Pacman::init() {
   pacmanSrcRect.y = pacmanSrcRect.x = animationCount = 0;
   pacmanDestRect.x = 0;
   pacmanDestRect.y = gridStartPosY + BLOCK_SIZE + 5;
-  pacmanDestRect.h = pacmanDestRect.w = 20;
+  pacmanDestRect.h = pacmanDestRect.w = ENTITY_SIZE;
   pacmanSrcRect.x = 160;
   pacmanNextDirection = pacmanDirection = DirectionRight;
+  e1.init(gridStartPosX, gridStartPosY, BLOCK_SIZE);
 }
 void Pacman::render() {
   SDL_Rect boxRect;
@@ -58,38 +60,30 @@ void Pacman::render() {
     boxRect.x = gridStartPosX;
     boxRect.y += BLOCK_SIZE;
   }
+  e1.render();
   pacmanLocation.calculateCoordinateToRender(pacmanDestRect, gridStartPosX,
                                              gridStartPosY, BLOCK_SIZE);
   pacmanSprite.renderEX(&pacmanDestRect, &pacmanSrcRect, pacmanDirection);
 }
 void Pacman::update() {
-  if (pacmanLocation.atCenter()) {
-    if (canMove(pacmanNextDirection)) {
+  if (e1.location.atCenter()) {
+    e1.DFS_search(gameGrid);
+  }
+  e1.update();
 
+  if (pacmanLocation.atCenter()) {
+    gameGrid.consume(pacmanLocation.blockY, pacmanLocation.blockX);
+    if (canMove(pacmanNextDirection)) {
       pacmanDirection = pacmanNextDirection;
-      bool XDirection = (pacmanDirection == DirectionLeft ||
-                         pacmanDirection == DirectionRight)
-                            ? true
-                            : false;
-      bool positiveDirection = (pacmanDirection == DirectionDown ||
-                                pacmanDirection == DirectionRight)
-                                   ? true
-                                   : false;
-      pacmanLocation.move(positiveDirection, XDirection);
+      pacmanLocation.move(pacmanDirection);
     } else
       pacmanNextDirection = pacmanDirection;
   } else {
     if (canMove(pacmanDirection)) {
-      bool XDirection = (pacmanDirection == DirectionLeft ||
-                         pacmanDirection == DirectionRight)
-                            ? true
-                            : false;
-      bool positiveDirection = (pacmanDirection == DirectionDown ||
-                                pacmanDirection == DirectionRight)
-                                   ? true
-                                   : false;
-      pacmanLocation.move(positiveDirection, XDirection);
+      pacmanLocation.move(pacmanDirection);
     }
+  }
+  if (gameGrid.complete()) {
   }
 
   animationCount++;

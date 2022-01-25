@@ -33,6 +33,9 @@ void MainScreen::handleInput(SDL_Event &e) {
       loadPacman();
     }
     break;
+  case SDL_KEYDOWN:
+    loadPacman();
+    break;
   default:
     break;
   }

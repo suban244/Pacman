@@ -1,22 +1,17 @@
 #pragma once
+#include "Enemy.h"
 #include "GameState.h"
 #include "Structures.h"
 
 class Pacman : public GameState {
 private:
-  enum Direction {
-    DirectionRight = 0,
-    DirectionDown = 90,
-    DirectionLeft = 180,
-    DirectionUp = 270
-
-  };
   Texture pacmanSprite;
   EntityLocation pacmanLocation;
   SDL_Rect pacmanSrcRect, pacmanDestRect;
   Direction pacmanDirection, pacmanNextDirection;
   int animationCount;
 
+  Enemy e1;
   Grid gameGrid;
   static int BLOCK_SIZE, gridStartPosX, gridStartPosY, pacmanSpriteSize;
 

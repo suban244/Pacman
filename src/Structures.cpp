@@ -33,6 +33,11 @@ void Node::addNode(Node *edgeNode) {
     }
   }
 }
+/*
+ * TODO: Easy
+ * Create a Good looking map
+ * 0: wall, 1: empty, 2: small write thing, 3: big white thing
+ */
 
 int Grid::baseGrid[GRID_HEIGHT][GRID_WIDTH] = {
     {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 1, 1, 1},
@@ -47,8 +52,6 @@ int Grid::baseGrid[GRID_HEIGHT][GRID_WIDTH] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    //{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    //{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -60,6 +63,9 @@ Grid::Grid() {
     for (int j = 0; j < GRID_WIDTH; j++) {
       nodes[i][j] = Node(baseGrid[i][j]);
       if (baseGrid[i][j] != 0) {
+        if (baseGrid[i][j] != 1)
+          count++;
+
         if (i != 0)
           if (nodes[i - 1][j].state != 0)
             nodes[i][j].addNode(&nodes[i - 1][j]);
@@ -86,6 +92,18 @@ Node *Grid::getNode(int i, int j) {
     return nullptr;
   }
   return &nodes[i][j];
+}
+bool Grid::complete() { return count == 0; }
+
+bool Grid::consume(int i, int j) {
+  if (i >= GRID_HEIGHT || j >= GRID_WIDTH || i < 0 || j < 0) {
+    return false;
+  }
+  bool toReturn = nodes[i][j].state != 1;
+  nodes[i][j].state = 1;
+  if (toReturn)
+    count--;
+  return toReturn;
 }
 
 EntityLocation::EntityLocation(int startX, int startY)
@@ -122,6 +140,16 @@ bool EntityLocation::move(bool positiveDirection, bool XDirection) {
     }
   }
   return blockChange;
+}
+
+bool EntityLocation::move(Direction direction) {
+  bool XDirection = (direction == DirectionLeft || direction == DirectionRight)
+                        ? true
+                        : false;
+  bool positiveDirection =
+      (direction == DirectionDown || direction == DirectionRight) ? true
+                                                                  : false;
+  return move(positiveDirection, XDirection);
 }
 
 bool EntityLocation::atCenter() { return (offsetX == 0 && offsetY == 0); }
