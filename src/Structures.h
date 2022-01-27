@@ -12,12 +12,14 @@ enum Direction {
 };
 
 class Pacman;
+
 struct Node {
   static int MAX_EDGES;
   int state;
   Node *edges[4];
+  int i, j;
 
-  Node(int state = 0);
+  Node(int i = 0, int j = 0, int state = 0);
   void addNode(Node *edgeNode);
 };
 
@@ -32,7 +34,7 @@ struct EntityLocation {
   bool move(Direction direction);
   void calculateCoordinateToRender(SDL_Rect &dest, int startPosX, int startPosY,
                                    int blockWidth);
-  bool atCenter();
+  bool atCenter() const;
 };
 
 class Grid {
@@ -42,9 +44,12 @@ class Grid {
 
 public:
   Grid();
-  static bool areConnected(Node *n1, Node *n2);
+  static bool areConnected(const Node *n1, const Node *n2);
   Node *getNode(int i, int j);
   bool consume(int i, int j);
   bool complete();
+  static bool canMove(const EntityLocation pacmanLocation, Grid &gameGrid,
+                      Direction direction, bool checkOffSet = false);
+  static Direction FindDirection(const Node *n1, const Node *n2);
   friend class Pacman;
 };

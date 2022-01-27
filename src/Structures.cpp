@@ -2,7 +2,7 @@
 #include <iostream>
 
 int Node::MAX_EDGES = 4;
-Node::Node(int state) : state(state) {
+Node::Node(int i, int j, int state) : state(state), i(i), j(j) {
   // Put this in a initializer list maybe
   edges[0] = edges[1] = edges[2] = edges[3] = nullptr;
 }
@@ -61,7 +61,7 @@ int Grid::baseGrid[GRID_HEIGHT][GRID_WIDTH] = {
 Grid::Grid() {
   for (int i = 0; i < GRID_HEIGHT; i++) {
     for (int j = 0; j < GRID_WIDTH; j++) {
-      nodes[i][j] = Node(baseGrid[i][j]);
+      nodes[i][j] = Node(i, j, baseGrid[i][j]);
       if (baseGrid[i][j] != 0) {
         if (baseGrid[i][j] != 1)
           count++;
@@ -77,7 +77,7 @@ Grid::Grid() {
   }
 }
 
-bool Grid::areConnected(Node *n1, Node *n2) {
+bool Grid::areConnected(const Node *n1, const Node *n2) {
   for (int i = 0; i < Node::MAX_EDGES; i++) {
     if (n1->edges[i] == nullptr)
       return false;
@@ -104,6 +104,23 @@ bool Grid::consume(int i, int j) {
   if (toReturn)
     count--;
   return toReturn;
+}
+
+Direction Grid::FindDirection(const Node *n1, const Node *n2) {
+  if(n1->i == n2->i) {
+    if(n2->j > n1->j)
+      return DirectionRight;
+    else 
+      return DirectionLeft;
+  }
+  else if(n1->j == n2->j) {
+    if(n2->i > n1->i)
+      return DirectionDown;
+    else 
+      return DirectionUp;
+  }
+  std::cout << "Bad nodes" << std::endl;
+  return DirectionDown;
 }
 
 EntityLocation::EntityLocation(int startX, int startY)
@@ -152,7 +169,7 @@ bool EntityLocation::move(Direction direction) {
   return move(positiveDirection, XDirection);
 }
 
-bool EntityLocation::atCenter() { return (offsetX == 0 && offsetY == 0); }
+bool EntityLocation::atCenter() const { return (offsetX == 0 && offsetY == 0); }
 
 void EntityLocation::calculateCoordinateToRender(SDL_Rect &dest, int startPosX,
                                                  int startPosY,
@@ -162,4 +179,34 @@ void EntityLocation::calculateCoordinateToRender(SDL_Rect &dest, int startPosX,
            offsetX * blockWidth / offsetMax / 2;
   dest.y = startPosY + blockY * blockWidth + margin +
            offsetY * blockWidth / offsetMax / 2;
+}
+bool Grid::canMove(const EntityLocation pacmanLocation, Grid &gameGrid,
+                   Direction direction, bool checkOffSet) {
+  if (direction == DirectionDown || direction == DirectionUp) {
+    if (pacmanLocation.offsetX == 0 || !checkOffSet) {
+      // It can move / change direction vertically
+      if (pacmanLocation.offsetY != 0)
+        return true;
+      if (Grid::areConnected(
+              gameGrid.getNode(pacmanLocation.blockY, pacmanLocation.blockX),
+              gameGrid.getNode(pacmanLocation.blockY +
+                                   ((direction == DirectionDown) ? 1 : -1),
+                               pacmanLocation.blockX)))
+        return true;
+    }
+  } else {
+    if (pacmanLocation.offsetY == 0 || !checkOffSet) {
+      // It can move / change direction horizontally
+      if (pacmanLocation.offsetX != 0)
+        return true;
+      if (Grid::areConnected(
+              gameGrid.getNode(pacmanLocation.blockY, pacmanLocation.blockX),
+              gameGrid.getNode(pacmanLocation.blockY,
+                               pacmanLocation.blockX +
+                                   ((direction == DirectionRight) ? 1 : -1))))
+
+        return true;
+    }
+  }
+  return false;
 }

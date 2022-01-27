@@ -8,7 +8,7 @@
  */
 
 Pacman::Pacman(StateMachine *s)
-    : GameState(s), pacmanLocation(1, 1), e1(1, 10) {}
+    : GameState(s), pacmanLocation(1, 1), e1(0, 10) {}
 int Pacman::BLOCK_SIZE = 40;
 int Pacman::gridStartPosX = WINDOW_WIDTH / 10 * 3;
 int Pacman::gridStartPosY = WINDOW_HEIGHT / 10;
@@ -67,19 +67,19 @@ void Pacman::render() {
 }
 void Pacman::update() {
   if (e1.location.atCenter()) {
-    e1.DFS_search(gameGrid);
+    e1.DFS_search(gameGrid, pacmanLocation);
   }
-  e1.update();
+  e1.update(gameGrid, pacmanLocation);
 
   if (pacmanLocation.atCenter()) {
     gameGrid.consume(pacmanLocation.blockY, pacmanLocation.blockX);
-    if (canMove(pacmanNextDirection)) {
+    if (Grid::canMove(pacmanLocation, gameGrid, pacmanNextDirection)) {
       pacmanDirection = pacmanNextDirection;
       pacmanLocation.move(pacmanDirection);
     } else
       pacmanNextDirection = pacmanDirection;
   } else {
-    if (canMove(pacmanDirection)) {
+    if (Grid::canMove(pacmanLocation, gameGrid, pacmanDirection)) {
       pacmanLocation.move(pacmanDirection);
     }
   }
@@ -120,32 +120,3 @@ void Pacman::handleInput(SDL_Event &e) {
  * At center we update the direction and do stuff
  * Upon block change we reest the direction
  */
-bool Pacman::canMove(Direction direction, bool checkOffSet) {
-  if (direction == DirectionDown || direction == DirectionUp) {
-    if (pacmanLocation.offsetX == 0 || !checkOffSet) {
-      // It can move / change direction vertically
-      if (pacmanLocation.offsetY != 0)
-        return true;
-      if (Grid::areConnected(
-              gameGrid.getNode(pacmanLocation.blockY, pacmanLocation.blockX),
-              gameGrid.getNode(pacmanLocation.blockY +
-                                   ((direction == DirectionDown) ? 1 : -1),
-                               pacmanLocation.blockX)))
-        return true;
-    }
-  } else {
-    if (pacmanLocation.offsetY == 0 || !checkOffSet) {
-      // It can move / change direction horizontally
-      if (pacmanLocation.offsetX != 0)
-        return true;
-      if (Grid::areConnected(
-              gameGrid.getNode(pacmanLocation.blockY, pacmanLocation.blockX),
-              gameGrid.getNode(pacmanLocation.blockY,
-                               pacmanLocation.blockX +
-                                   ((direction == DirectionRight) ? 1 : -1))))
-
-        return true;
-    }
-  }
-  return false;
-}

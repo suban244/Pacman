@@ -15,8 +15,6 @@ private:
   Grid gameGrid;
   static int BLOCK_SIZE, gridStartPosX, gridStartPosY, pacmanSpriteSize;
 
-  bool canMove(Direction direciton, bool checkOffSet = true);
-
 public:
   Pacman(StateMachine *s);
   void init() override;
