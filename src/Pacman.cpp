@@ -66,9 +66,7 @@ void Pacman::render() {
   pacmanSprite.renderEX(&pacmanDestRect, &pacmanSrcRect, pacmanDirection);
 }
 void Pacman::update() {
-  if (e1.location.atCenter()) {
-    e1.DFS_search(gameGrid, pacmanLocation);
-  }
+
   e1.update(gameGrid, pacmanLocation);
 
   if (pacmanLocation.atCenter()) {

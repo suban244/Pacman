@@ -24,7 +24,7 @@ void Enemy::update(Grid &gameGrid, EntityLocation &pacmanLocation) {
   location.calculateCoordinateToRender(destRect, startPosX, startPosY,
                                        blockWidth);
   // Random movement
-  moveStrainghtRandom(gameGrid);
+  moveWithDFS(gameGrid, pacmanLocation);
 }
 
 void Enemy::moveStrainghtRandom(Grid &gameGrid) {
@@ -66,6 +66,12 @@ bool vectorContainsNode(std::vector<Node *> &vec, Node *node) {
       contains = true;
   }
   return contains;
+}
+
+void Enemy::moveWithDFS(Grid &gameGrid, EntityLocation &pacmanLocation) {
+  if (location.atCenter())
+    direction = DFS_search(gameGrid, pacmanLocation);
+  location.move(direction);
 }
 
 Direction Enemy::DFS_search(Grid &gameGrid, EntityLocation &pacmanLocation) {
