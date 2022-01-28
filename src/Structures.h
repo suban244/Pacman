@@ -34,6 +34,11 @@ struct Node {
   Node(int i = 0, int j = 0, NodeState state = NodeStateWall);
   void addNode(Node *edgeNode);
 };
+struct NodeWithParent {
+  NodeWithParent *parent;
+  Node *baseNode;
+  NodeWithParent(Node *baseNode, NodeWithParent *parent);
+};
 
 struct EntityLocation {
   short blockX, blockY; // GRID_HEIGHT * GRID_WIDTH

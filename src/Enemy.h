@@ -1,7 +1,9 @@
 #pragma once
 #include "Structures.h"
 #include "Texture.h"
+#include <algorithm>
 #include <ctime>
+#include <queue>
 #include <stack>
 #include <vector>
 #define ENTITY_SIZE 20
@@ -60,6 +62,9 @@ private:
   Direction DFS_search(Grid &gameGrid, EntityLocation &pacmanLocation,
                        std::vector<Node *> &pathFollowed);
 
+  Direction BFS_sarech(Grid &gameGrid, EntityLocation &pacmanLocation,
+                       std::vector<Node *> pathFollowed);
+
   /*
    * Completely handles movement
    * @param gameGrid The grid of the game
@@ -97,4 +102,9 @@ private:
    * destination my have changed
    */
   void moveWithDFS2(Grid &gameGrid, EntityLocation &pacmanLocation);
+
+  /*
+   *
+   */
+  void moveWithBFS(Grid &gameGrid, EntityLocation &pacmanLocation);
 };

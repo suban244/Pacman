@@ -33,6 +33,8 @@ void Node::addNode(Node *edgeNode) {
     }
   }
 }
+
+NodeWithParent::NodeWithParent(Node *baseNode, NodeWithParent *parent): parent(parent) ,baseNode(baseNode){}
 /*
  * TODO: Easy
  * Create a Good looking map

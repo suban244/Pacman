@@ -1,4 +1,5 @@
 #include "Enemy.h"
+#include "Structures.h"
 
 Enemy::Enemy(int i, int j) : location(j, i) {
   destRect.w = destRect.h = ENTITY_SIZE;
@@ -21,7 +22,7 @@ void Enemy::update(Grid &gameGrid, EntityLocation &pacmanLocation) {
                                        blockWidth);
   // Random movement
   // moveWithDFS(gameGrid, pacmanLocation);
-  moveWithDFS2(gameGrid, pacmanLocation);
+  moveWithBFS(gameGrid, pacmanLocation);
 }
 
 void Enemy::moveStrainghtRandom(Grid &gameGrid) {
@@ -88,6 +89,14 @@ void Enemy::moveWithDFS(Grid &gameGrid, EntityLocation &pacmanLocation) {
   if (location.atCenter()) {
     std::vector<Node *> pathFollowed;
     direction = DFS_search(gameGrid, pacmanLocation, pathFollowed);
+  }
+  location.move(direction);
+}
+
+void Enemy::moveWithBFS(Grid &gameGrid, EntityLocation &pacmanLocation) {
+  if (location.atCenter()) {
+    std::vector<Node *> pathFollowed;
+    direction = BFS_sarech(gameGrid, pacmanLocation, pathFollowed);
   }
   location.move(direction);
 }
@@ -159,6 +168,70 @@ Direction Enemy::DFS_search(Grid &gameGrid, EntityLocation &pacmanLocation,
   } else {
     return getRandomDirection(gameGrid);
   }
+}
+
+Direction Enemy::BFS_sarech(Grid &gameGrid, EntityLocation &pacmanLocation,
+                            std::vector<Node *> pathFollowed) {
+
+  std::queue<NodeWithParent *> frontier;
+  std::vector<Node *> explored;
+  std::vector<NodeWithParent *> addedNodes;
+
+  NodeWithParent *startNode = new NodeWithParent(
+      gameGrid.getNode(location.blockY, location.blockX), nullptr);
+  addedNodes.push_back(startNode);
+
+  Node *destinationNode =
+      gameGrid.getNode(pacmanLocation.blockY, pacmanLocation.blockX);
+
+  frontier.push(startNode);
+
+  NodeWithParent *temp;
+  while (!frontier.empty()) {
+    temp = frontier.front();
+    frontier.pop();
+    explored.push_back(temp->baseNode);
+
+    if (temp->baseNode == destinationNode) {
+      // YAY
+      break;
+    } else {
+
+      bool nodeAdded = false;
+      for (int i = 0; i < 4; i++) {
+        if (temp->baseNode->edges[i] == nullptr)
+          break;
+        // Check if the node is in explored
+        bool contains = vectorContainsNode(explored, temp->baseNode->edges[i]);
+        if (!contains) {
+          // temp->baseNode->edges[i])
+          frontier.push(new NodeWithParent(temp->baseNode->edges[i], temp));
+          addedNodes.push_back(frontier.back());
+          nodeAdded = true;
+        }
+      }
+      if (!nodeAdded) {
+        // Delete the nodewithparent
+        addedNodes.erase(
+            std::remove(addedNodes.begin(), addedNodes.end(), temp),
+            addedNodes.end());
+
+        delete temp;
+      }
+    }
+  }
+  while (temp) {
+    pathFollowed.insert(pathFollowed.begin(), temp->baseNode);
+    temp = temp->parent;
+  }
+  while (!addedNodes.empty()) {
+    delete addedNodes.back();
+    addedNodes.pop_back();
+  }
+  if (pathFollowed.size() > 1) {
+    return Grid::FindDirection(pathFollowed[0], pathFollowed[1]);
+  } else
+    return getRandomDirection(gameGrid);
 }
 
 bool Enemy::detectColision(SDL_Rect &enemyRect) {
