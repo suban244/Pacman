@@ -2,7 +2,7 @@
 #include <iostream>
 
 int Node::MAX_EDGES = 4;
-Node::Node(int i, int j, int state) : state(state), i(i), j(j) {
+Node::Node(int i, int j, NodeState state) : state(state), i(i), j(j) {
   // Put this in a initializer list maybe
   edges[0] = edges[1] = edges[2] = edges[3] = nullptr;
 }
@@ -61,7 +61,7 @@ int Grid::baseGrid[GRID_HEIGHT][GRID_WIDTH] = {
 Grid::Grid() {
   for (int i = 0; i < GRID_HEIGHT; i++) {
     for (int j = 0; j < GRID_WIDTH; j++) {
-      nodes[i][j] = Node(i, j, baseGrid[i][j]);
+      nodes[i][j] = Node(i, j, NodeState(baseGrid[i][j]));
       if (baseGrid[i][j] != 0) {
         if (baseGrid[i][j] != 1)
           count++;
@@ -99,8 +99,10 @@ bool Grid::consume(int i, int j) {
   if (i >= GRID_HEIGHT || j >= GRID_WIDTH || i < 0 || j < 0) {
     return false;
   }
-  bool toReturn = nodes[i][j].state != 1;
-  nodes[i][j].state = 1;
+  if(nodes[i][j].state == NodeStateWall) 
+    std::cout << "Oh no" << std::endl;
+  bool toReturn = nodes[i][j].state != NodeStateEmpty;
+  nodes[i][j].state = NodeStateEmpty;
   if (toReturn)
     count--;
   return toReturn;

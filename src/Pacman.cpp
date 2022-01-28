@@ -34,7 +34,7 @@ void Pacman::render() {
     for (int j = 0; j < GRID_WIDTH; j++) {
 
       switch (gameGrid.nodes[i][j].state) {
-      case 0:
+      case NodeStateWall:
         SDL_SetRenderDrawColor(Game::renderer, 0, 200, 50, 255);
         break;
       default:
@@ -45,11 +45,11 @@ void Pacman::render() {
 
       SDL_SetRenderDrawColor(Game::renderer, 255, 255, 255, 255);
       switch (gameGrid.nodes[i][j].state) {
-      case 2:
+      case NodeStatePoint:
         Texture::DrawFillCircle(Game::renderer, boxRect.x + boxRect.w / 2,
                                 boxRect.y + boxRect.w / 2, 2);
         break;
-      case 3:
+      case NodeStatePower:
         Texture::DrawFillCircle(Game::renderer, boxRect.x + boxRect.w / 2,
                                 boxRect.y + boxRect.w / 2, 5);
         break;

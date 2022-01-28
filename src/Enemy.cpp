@@ -13,10 +13,6 @@ void Enemy::init(int startPosX, int startPosY, int blockWidth) {
   std::srand(std::time(nullptr));
 }
 
-/*
- * Moves the Enemy object in a certain direction
- * Then updates where we shound render it
- */
 void Enemy::update(Grid &gameGrid, EntityLocation &pacmanLocation) {
   // TODO: Move the enemy object
 
@@ -24,7 +20,8 @@ void Enemy::update(Grid &gameGrid, EntityLocation &pacmanLocation) {
   location.calculateCoordinateToRender(destRect, startPosX, startPosY,
                                        blockWidth);
   // Random movement
-  moveWithDFS(gameGrid, pacmanLocation);
+  // moveWithDFS(gameGrid, pacmanLocation);
+  moveWithDFS2(gameGrid, pacmanLocation);
 }
 
 void Enemy::moveStrainghtRandom(Grid &gameGrid) {
@@ -68,20 +65,41 @@ bool vectorContainsNode(std::vector<Node *> &vec, Node *node) {
   return contains;
 }
 
-void Enemy::moveWithDFS(Grid &gameGrid, EntityLocation &pacmanLocation) {
-  if (location.atCenter())
-    direction = DFS_search(gameGrid, pacmanLocation);
+void Enemy::moveWithDFS2(Grid &gameGrid, EntityLocation &pacmanLocation) {
+  if (location.atCenter()) {
+    if (pathToBeFollowed.empty()) {
+      direction = DFS_search(gameGrid, pacmanLocation, pathToBeFollowed);
+
+      if (!pathToBeFollowed.empty())
+        pathToBeFollowed.erase(pathToBeFollowed.begin());
+      if (!pathToBeFollowed.empty())
+        pathToBeFollowed.erase(pathToBeFollowed.begin());
+    } else {
+      direction = Grid::FindDirection(
+          gameGrid.getNode(location.blockY, location.blockX),
+          pathToBeFollowed.front());
+      pathToBeFollowed.erase(pathToBeFollowed.begin());
+    }
+  }
   location.move(direction);
 }
 
-Direction Enemy::DFS_search(Grid &gameGrid, EntityLocation &pacmanLocation) {
+void Enemy::moveWithDFS(Grid &gameGrid, EntityLocation &pacmanLocation) {
+  if (location.atCenter()) {
+    std::vector<Node *> pathFollowed;
+    direction = DFS_search(gameGrid, pacmanLocation, pathFollowed);
+  }
+  location.move(direction);
+}
+
+Direction Enemy::DFS_search(Grid &gameGrid, EntityLocation &pacmanLocation,
+                            std::vector<Node *> &pathFollowed) {
   /*
    * TODO: Hard
    *
    */
   std::stack<Node *> frontier;
   std::vector<Node *> explored;
-  std::vector<Node *> pathFollowed;
 
   Node *startNode = gameGrid.getNode(location.blockY, location.blockX);
   Node *destinationNode =
