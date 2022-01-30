@@ -1,7 +1,7 @@
 #include "Enemy.h"
 #include "Structures.h"
 
-Enemy::Enemy(int i, int j) : location(j, i) {
+Enemy::Enemy(int i, int j, EnemyType type) : location(j, i), type(type) {
   destRect.w = destRect.h = ENTITY_SIZE;
 }
 void Enemy::init(int startPosX, int startPosY, int blockWidth) {
@@ -12,6 +12,7 @@ void Enemy::init(int startPosX, int startPosY, int blockWidth) {
                                        blockWidth);
   sprite.loadFromFile("assets/enemy.png");
   std::srand(std::time(nullptr));
+  toMove = false;
 }
 
 void Enemy::update(Grid &gameGrid, EntityLocation &pacmanLocation) {
@@ -20,9 +21,34 @@ void Enemy::update(Grid &gameGrid, EntityLocation &pacmanLocation) {
   // DFS_search(gameGrid, pacmanLocation);
   location.calculateCoordinateToRender(destRect, startPosX, startPosY,
                                        blockWidth);
-  // Random movement
-  // moveWithDFS(gameGrid, pacmanLocation);
-  moveWithBFS(gameGrid, pacmanLocation);
+  if (toMove) {
+    switch (type) {
+    case ENEMY_RANDOM:
+      moveFullyRandom(gameGrid);
+      break;
+    case ENEMY_RANDOM_STRAIGHT:
+      moveStrainghtRandom(gameGrid);
+      break;
+
+    case ENEMY_DFS_BAD:
+      moveWithDFS(gameGrid, pacmanLocation);
+      break;
+
+    case ENEMY_DFS_LESS_BAD:
+      moveWithDFS2(gameGrid, pacmanLocation);
+      break;
+
+    case ENEMY_BFS:
+      moveWithBFS(gameGrid, pacmanLocation);
+      break;
+    case ENEMY_EUCLIDEAN:
+      moveWithEuclideanDistance(gameGrid, pacmanLocation);
+      break;
+    default:
+      moveFullyRandom(gameGrid);
+    }
+  }
+  toMove = !toMove;
 }
 
 void Enemy::moveStrainghtRandom(Grid &gameGrid) {
@@ -163,7 +189,7 @@ Direction Enemy::DFS_search(Grid &gameGrid, EntityLocation &pacmanLocation,
     }
   }
 
-  if (pathFollowed.size() > 2) {
+  if (pathFollowed.size() > 1) {
     return Grid::FindDirection(startNode, pathFollowed[1]);
   } else {
     return getRandomDirection(gameGrid);
@@ -171,7 +197,7 @@ Direction Enemy::DFS_search(Grid &gameGrid, EntityLocation &pacmanLocation,
 }
 
 Direction Enemy::BFS_sarech(Grid &gameGrid, EntityLocation &pacmanLocation,
-                            std::vector<Node *> pathFollowed) {
+                            std::vector<Node *> &pathFollowed) {
 
   std::queue<NodeWithParent *> frontier;
   std::vector<Node *> explored;
@@ -232,6 +258,62 @@ Direction Enemy::BFS_sarech(Grid &gameGrid, EntityLocation &pacmanLocation,
     return Grid::FindDirection(pathFollowed[0], pathFollowed[1]);
   } else
     return getRandomDirection(gameGrid);
+}
+
+float calcEuclideanDistance(int x1, int y1, int x2, int y2) {
+  return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+}
+void Enemy::moveWithEuclideanDistance(Grid &gameGrid,
+                                      EntityLocation &pacmanLocation) {
+  // Top distance
+  if (location.atCenter()) {
+    float minDistance = 1000;
+    float dist;
+    Direction minDirection = DirectionUp;
+    if (Grid::canMove(location, gameGrid, DirectionUp)) {
+      dist = calcEuclideanDistance(pacmanLocation.blockX, pacmanLocation.blockY,
+                                   location.blockX, location.blockY - 1);
+      if (dist < minDistance) {
+        minDistance = dist;
+        minDirection = DirectionUp;
+      }
+    }
+    if (Grid::canMove(location, gameGrid, DirectionDown)) {
+      dist = calcEuclideanDistance(pacmanLocation.blockX, pacmanLocation.blockY,
+                                   location.blockX, location.blockY + 1);
+      if (dist < minDistance) {
+        minDistance = dist;
+        minDirection = DirectionDown;
+      }
+    }
+    if (Grid::canMove(location, gameGrid, DirectionLeft)) {
+      dist = calcEuclideanDistance(pacmanLocation.blockX, pacmanLocation.blockY,
+                                   location.blockX - 1, location.blockY);
+      if (dist < minDistance) {
+        minDistance = dist;
+        minDirection = DirectionLeft;
+      }
+    }
+    if (Grid::canMove(location, gameGrid, DirectionRight)) {
+      dist = calcEuclideanDistance(pacmanLocation.blockX, pacmanLocation.blockY,
+                                   location.blockX + 1, location.blockY);
+      if (dist < minDistance) {
+        minDistance = dist;
+        minDirection = DirectionRight;
+      }
+    }
+
+    direction = minDirection;
+  }
+  location.move(direction);
+}
+
+Direction Enemy::AStarSearch(Grid &gameGrid, EntityLocation &pacmanLocation,
+                             std::vector<Node *> &pathFollowed) {
+  /*
+   * TODO
+   */
+  return getRandomDirection(gameGrid);
 }
 
 bool Enemy::detectColision(SDL_Rect &enemyRect) {

@@ -11,7 +11,7 @@ private:
   Direction pacmanDirection, pacmanNextDirection;
   int animationCount;
 
-  Enemy e1;
+  Enemy e1, e2, e3, e4;
   Grid gameGrid;
   static int BLOCK_SIZE, gridStartPosX, gridStartPosY, pacmanSpriteSize;
 

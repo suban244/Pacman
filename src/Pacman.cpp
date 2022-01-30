@@ -8,7 +8,9 @@
  */
 
 Pacman::Pacman(StateMachine *s)
-    : GameState(s), pacmanLocation(1, 1), e1(0, 10) {}
+    : GameState(s), pacmanLocation(1, 1), e1(0, 10, ENEMY_RANDOM_STRAIGHT),
+      e2(0, 5, ENEMY_RANDOM), e3(0, 18, ENEMY_DFS_LESS_BAD),
+      e4(14, 11, ENEMY_EUCLIDEAN) {}
 int Pacman::BLOCK_SIZE = 40;
 int Pacman::gridStartPosX = WINDOW_WIDTH / 10 * 3;
 int Pacman::gridStartPosY = WINDOW_HEIGHT / 10;
@@ -24,6 +26,9 @@ void Pacman::init() {
   pacmanSrcRect.x = 160;
   pacmanNextDirection = pacmanDirection = DirectionRight;
   e1.init(gridStartPosX, gridStartPosY, BLOCK_SIZE);
+  e2.init(gridStartPosX, gridStartPosY, BLOCK_SIZE);
+  e3.init(gridStartPosX, gridStartPosY, BLOCK_SIZE);
+  e4.init(gridStartPosX, gridStartPosY, BLOCK_SIZE);
 }
 void Pacman::render() {
   SDL_Rect boxRect;
@@ -61,6 +66,9 @@ void Pacman::render() {
     boxRect.y += BLOCK_SIZE;
   }
   e1.render();
+  e2.render();
+  e3.render();
+  e4.render();
   pacmanLocation.calculateCoordinateToRender(pacmanDestRect, gridStartPosX,
                                              gridStartPosY, BLOCK_SIZE);
   pacmanSprite.renderEX(&pacmanDestRect, &pacmanSrcRect, pacmanDirection);
@@ -68,6 +76,9 @@ void Pacman::render() {
 void Pacman::update() {
 
   e1.update(gameGrid, pacmanLocation);
+  e2.update(gameGrid, pacmanLocation);
+  e3.update(gameGrid, pacmanLocation);
+  e4.update(gameGrid, pacmanLocation);
 
   if (pacmanLocation.atCenter()) {
     gameGrid.consume(pacmanLocation.blockY, pacmanLocation.blockX);
