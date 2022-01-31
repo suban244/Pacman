@@ -1,6 +1,6 @@
 #pragma once
-#define GRID_WIDTH 19
-#define GRID_HEIGHT 19
+#define GRID_WIDTH 20
+#define GRID_HEIGHT 25
 #include <SDL2/SDL.h>
 
 enum Direction {
