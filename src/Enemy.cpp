@@ -3,52 +3,47 @@
 
 Enemy::Enemy(int i, int j, EnemyType type) : location(j, i), type(type) {
   destRect.w = destRect.h = ENTITY_SIZE;
+  sprite.loadFromFile("assets/enemy.png");
+  std::srand(std::time(nullptr));
 }
-void Enemy::init(int startPosX, int startPosY, int blockWidth) {
+void Enemy::init(int startPosX, int startPosY, int blockWidth, Grid &gameGrid) {
   this->startPosX = startPosX;
   this->startPosY = startPosY;
   this->blockWidth = blockWidth;
   location.calculateCoordinateToRender(destRect, startPosX, startPosY,
                                        blockWidth);
-  sprite.loadFromFile("assets/enemy.png");
-  std::srand(std::time(nullptr));
-  toMove = false;
+  direction = getRandomDirection(gameGrid);
 }
 
 void Enemy::update(Grid &gameGrid, EntityLocation &pacmanLocation) {
   // TODO: Move the enemy object
 
   // DFS_search(gameGrid, pacmanLocation);
-  location.calculateCoordinateToRender(destRect, startPosX, startPosY,
-                                       blockWidth);
-  if (toMove) {
-    switch (type) {
-    case ENEMY_RANDOM:
-      moveFullyRandom(gameGrid);
-      break;
-    case ENEMY_RANDOM_STRAIGHT:
-      moveStrainghtRandom(gameGrid);
-      break;
+  switch (type) {
+  case ENEMY_RANDOM:
+    moveFullyRandom(gameGrid);
+    break;
+  case ENEMY_RANDOM_STRAIGHT:
+    moveStrainghtRandom(gameGrid);
+    break;
 
-    case ENEMY_DFS_BAD:
-      moveWithDFS(gameGrid, pacmanLocation);
-      break;
+  case ENEMY_DFS_BAD:
+    moveWithDFS(gameGrid, pacmanLocation);
+    break;
 
-    case ENEMY_DFS_LESS_BAD:
-      moveWithDFS2(gameGrid, pacmanLocation);
-      break;
+  case ENEMY_DFS_LESS_BAD:
+    moveWithDFS2(gameGrid, pacmanLocation);
+    break;
 
-    case ENEMY_BFS:
-      moveWithBFS(gameGrid, pacmanLocation);
-      break;
-    case ENEMY_EUCLIDEAN:
-      moveWithEuclideanDistance(gameGrid, pacmanLocation);
-      break;
-    default:
-      moveFullyRandom(gameGrid);
-    }
+  case ENEMY_BFS:
+    moveWithBFS(gameGrid, pacmanLocation);
+    break;
+  case ENEMY_EUCLIDEAN:
+    moveWithEuclideanDistance(gameGrid, pacmanLocation);
+    break;
+  default:
+    moveFullyRandom(gameGrid);
   }
-  toMove = !toMove;
 }
 
 void Enemy::moveStrainghtRandom(Grid &gameGrid) {
@@ -81,7 +76,11 @@ void Enemy::moveFullyRandom(Grid &gameGrid) {
   }
 }
 
-void Enemy::render() { sprite.render(&destRect); }
+void Enemy::render() {
+  location.calculateCoordinateToRender(destRect, startPosX, startPosY,
+                                       blockWidth);
+  sprite.render(&destRect);
+}
 
 bool vectorContainsNode(std::vector<Node *> &vec, Node *node) {
   bool contains = false;

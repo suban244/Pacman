@@ -1,23 +1,32 @@
 #include "Pacman.h"
 #include "Game.h"
 
-/*
- * Map of 19 x 19
- * So we need a 19 x 19 ko array of nodes
- *
- */
+Pacman::Pacman(StateMachine *s) : GameState(s), pacmanLocation(1, 1) {
+  enemies.push_back(new Enemy(1, 1, ENEMY_RANDOM_STRAIGHT));
+  enemies.push_back(new Enemy(1, 1, ENEMY_RANDOM_STRAIGHT));
+  enemies.push_back(new Enemy(1, 1, ENEMY_DFS_LESS_BAD));
+  enemies.push_back(new Enemy(23, 18, ENEMY_EUCLIDEAN));
+  enemies.push_back(new Enemy(23, 1, ENEMY_BFS));
 
-Pacman::Pacman(StateMachine *s)
-    : GameState(s), pacmanLocation(1, 1), e1(0, 10, ENEMY_RANDOM_STRAIGHT),
-      e2(0, 5, ENEMY_RANDOM), e3(0, 18, ENEMY_DFS_LESS_BAD),
-      e4(14, 11, ENEMY_EUCLIDEAN) {}
-int Pacman::BLOCK_SIZE = 40;
+  for (int i = 0; i < 3; i++) {
+    numTextures[i].loadSentence(std::to_string(i + 1), 128, Texture::White);
+  }
+  WonTexture.loadSentence("WON", 128, Texture::White);
+
+  pacmanSprite.loadFromFile("assets/pacman.png");
+}
+
+Pacman::~Pacman() {
+  for (Enemy *e : enemies)
+    delete e;
+}
+
+int Pacman::BLOCK_SIZE = ENTITY_SIZE * 2;
 int Pacman::gridStartPosX = WINDOW_WIDTH / 10 * 3;
-int Pacman::gridStartPosY = WINDOW_HEIGHT / 10;
+int Pacman::gridStartPosY = 0;
 int Pacman::pacmanSpriteSize = 80; // Becasue each sprite is 80 x 80
 
 void Pacman::init() {
-  pacmanSprite.loadFromFile("assets/pacman.png");
   pacmanSrcRect.h = pacmanSrcRect.w = pacmanSpriteSize;
   pacmanSrcRect.y = pacmanSrcRect.x = animationCount = 0;
   pacmanDestRect.x = 0;
@@ -25,10 +34,12 @@ void Pacman::init() {
   pacmanDestRect.h = pacmanDestRect.w = ENTITY_SIZE;
   pacmanSrcRect.x = 160;
   pacmanNextDirection = pacmanDirection = DirectionRight;
-  e1.init(gridStartPosX, gridStartPosY, BLOCK_SIZE);
-  e2.init(gridStartPosX, gridStartPosY, BLOCK_SIZE);
-  e3.init(gridStartPosX, gridStartPosY, BLOCK_SIZE);
-  e4.init(gridStartPosX, gridStartPosY, BLOCK_SIZE);
+
+  for (Enemy *e : enemies)
+    e->init(gridStartPosX, gridStartPosY, BLOCK_SIZE, gameGrid);
+
+  state = StateStarting;
+  startingStateTime = STARTING_STATE_TIME;
 }
 void Pacman::render() {
   SDL_Rect boxRect;
@@ -65,38 +76,61 @@ void Pacman::render() {
     boxRect.x = gridStartPosX;
     boxRect.y += BLOCK_SIZE;
   }
-  e1.render();
-  e2.render();
-  e3.render();
-  e4.render();
+  for (Enemy *e : enemies)
+    e->render();
+
   pacmanLocation.calculateCoordinateToRender(pacmanDestRect, gridStartPosX,
                                              gridStartPosY, BLOCK_SIZE);
   pacmanSprite.renderEX(&pacmanDestRect, &pacmanSrcRect, pacmanDirection);
+
+  if (state == StateStarting) {
+    numTextures[startingStateTime / (STARTING_STATE_TIME / 3)].render(
+        WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+  } else if (state == StateWon) {
+    WonTexture.render(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+  }
 }
 void Pacman::update() {
-
-  e1.update(gameGrid, pacmanLocation);
-  e2.update(gameGrid, pacmanLocation);
-  e3.update(gameGrid, pacmanLocation);
-  e4.update(gameGrid, pacmanLocation);
-
-  if (pacmanLocation.atCenter()) {
-    gameGrid.consume(pacmanLocation.blockY, pacmanLocation.blockX);
-    if (Grid::canMove(pacmanLocation, gameGrid, pacmanNextDirection)) {
-      pacmanDirection = pacmanNextDirection;
-      pacmanLocation.move(pacmanDirection);
-    } else
-      pacmanNextDirection = pacmanDirection;
-  } else {
-    if (Grid::canMove(pacmanLocation, gameGrid, pacmanDirection)) {
-      pacmanLocation.move(pacmanDirection);
+  switch (state) {
+  case StateStarting:
+    startingStateTime--;
+    if (startingStateTime < 0) {
+      state = StatePlaying;
     }
-  }
-  if (gameGrid.complete()) {
+    return;
+  case StatePlaying: {
+    for (Enemy *e : enemies)
+      e->update(gameGrid, pacmanLocation);
+    bool colision = false;
+    for (Enemy *e : enemies)
+      colision = e->detectColision(pacmanDestRect);
+    if (colision)
+      std::cout << "OH NO" << std::endl;
+
+    if (pacmanLocation.atCenter()) {
+      gameGrid.consume(pacmanLocation.blockY, pacmanLocation.blockX);
+      if (Grid::canMove(pacmanLocation, gameGrid, pacmanNextDirection)) {
+        pacmanDirection = pacmanNextDirection;
+        pacmanLocation.move(pacmanDirection);
+      } else
+        pacmanNextDirection = pacmanDirection;
+    } else {
+      if (Grid::canMove(pacmanLocation, gameGrid, pacmanDirection)) {
+        pacmanLocation.move(pacmanDirection);
+      }
+    }
+    if (gameGrid.complete()) {
+      state = StateWon;
+    }
+
+    animationCount++;
+    pacmanSrcRect.x = 80 * ((animationCount / 10) % 3);
+    break;
   }
 
-  animationCount++;
-  pacmanSrcRect.x = 80 * ((animationCount / 10) % 3);
+  default:
+    return;
+  }
 }
 void Pacman::handleInput(SDL_Event &e) {
   switch (e.type) {

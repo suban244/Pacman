@@ -6,7 +6,7 @@
 #include <queue>
 #include <stack>
 #include <vector>
-#define ENTITY_SIZE 20
+#define ENTITY_SIZE 14
 enum EnemyType {
   ENEMY_RANDOM,
   ENEMY_RANDOM_STRAIGHT,
@@ -25,7 +25,6 @@ struct Enemy {
 
   std::vector<Node *> pathToBeFollowed;
   EnemyType type;
-  bool toMove; // to move entity once per 2 update
 
   int startPosX, startPosY, blockWidth;
 
@@ -33,7 +32,7 @@ struct Enemy {
   /*
    * sets some variables for rendering purposesses
    */
-  void init(int startPosX, int startPosY, int blockWidth);
+  void init(int startPosX, int startPosY, int blockWidth, Grid &gameGrid);
 
   /*
    * @param enemyRect SDL_Rect of the adversary (pacman)

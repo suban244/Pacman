@@ -5,6 +5,7 @@ SDL_Color Texture::Black = {0, 0, 0, 255};
 SDL_Color Texture::Green = {0, 255, 0, 255};
 SDL_Color Texture::Red = {255, 0, 0, 255};
 SDL_Color Texture::DarkGreen = {118, 150, 86};
+SDL_Color Texture::White = {255, 255, 255};
 
 Texture::Texture() {
   mTexture = NULL;

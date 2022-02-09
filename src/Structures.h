@@ -18,6 +18,8 @@ enum NodeState {
   NodeStatePower = 3
 };
 
+enum State { StateStarting, StatePlaying, StateWon, StateDied };
+
 class Pacman;
 
 struct Node {
@@ -102,7 +104,7 @@ public:
    * Pacman does his consuming thing here, returns true if there was something
    * to consume
    */
-  bool consume(int i, int j);
+  int consume(int i, int j);
 
   /*
    * Returns true if all the consumable's of the grid are consumed

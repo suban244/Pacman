@@ -14,7 +14,7 @@ class Texture {
   // radius);
 
 public:
-  static SDL_Color Black, Green, DarkGreen, Red;
+  static SDL_Color Black, Green, DarkGreen, Red, White;
   Texture();
   ~Texture();
 
