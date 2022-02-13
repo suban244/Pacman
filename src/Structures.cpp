@@ -90,6 +90,12 @@ Grid::Grid() {
   }
 }
 
+void Grid::reset() {
+  for (int i = 0; i < GRID_HEIGHT; i++)
+    for (int j = 0; j < GRID_WIDTH; j++)
+      nodes[i][j].state = baseGrid[i][j];
+}
+
 bool Grid::areConnected(const Node *n1, const Node *n2) {
   for (int i = 0; i < Node::MAX_EDGES; i++) {
     if (n1->edges[i] == nullptr)

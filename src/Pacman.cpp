@@ -133,28 +133,35 @@ void Pacman::update() {
   }
 }
 void Pacman::handleInput(SDL_Event &e) {
-  switch (e.type) {
-  case SDL_KEYDOWN:
-    switch (e.key.keysym.sym) {
-    case SDLK_w:
-      pacmanNextDirection = DirectionUp;
-      break;
-    case SDLK_a:
-      pacmanNextDirection = DirectionLeft;
-      break;
-    case SDLK_s:
-      pacmanNextDirection = DirectionDown;
-      break;
-    case SDLK_d:
-      pacmanNextDirection = DirectionRight;
+  if (state == StatePlaying) {
+    switch (e.type) {
+    case SDL_KEYDOWN:
+      switch (e.key.keysym.sym) {
+      case SDLK_w:
+        pacmanNextDirection = DirectionUp;
+        break;
+      case SDLK_a:
+        pacmanNextDirection = DirectionLeft;
+        break;
+      case SDLK_s:
+        pacmanNextDirection = DirectionDown;
+        break;
+      case SDLK_d:
+        pacmanNextDirection = DirectionRight;
+        break;
+      default:
+        break;
+      }
+
       break;
     default:
       break;
     }
-
-    break;
-  default:
-    break;
+  } else if (state == StateWon) {
+    if (e.type == SDL_KEYDOWN) {
+      gameGrid.reset();
+      init();
+    }
   }
 }
 // Maybe use a tempr to track the direction for some time

@@ -20,6 +20,8 @@ enum NodeState {
 
 enum State { StateStarting, StatePlaying, StateWon, StateDied };
 
+struct MapInfo {};
+
 class Pacman;
 
 struct Node {
@@ -83,6 +85,11 @@ class Grid {
 
 public:
   Grid();
+
+  /*
+   * Resets the grid to original state
+   */
+  void reset();
 
   /*
    * @param n1 A reference node
