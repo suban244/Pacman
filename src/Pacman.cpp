@@ -2,11 +2,11 @@
 #include "Game.h"
 
 Pacman::Pacman(StateMachine *s) : GameState(s), pacmanLocation(1, 1) {
-  enemies.push_back(new Enemy(1, 1, ENEMY_RANDOM_STRAIGHT));
-  enemies.push_back(new Enemy(1, 1, ENEMY_RANDOM_STRAIGHT));
-  enemies.push_back(new Enemy(1, 1, ENEMY_DFS_LESS_BAD));
-  enemies.push_back(new Enemy(23, 18, ENEMY_EUCLIDEAN));
-  enemies.push_back(new Enemy(23, 1, ENEMY_BFS));
+  enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_RANDOM_STRAIGHT));
+  enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_DFS_LESS_BAD));
+  enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_EUCLIDEAN));
+  enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_BFS));
+  enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_RANDOM));
 
   for (int i = 0; i < 3; i++) {
     numTextures[i].loadSentence(std::to_string(i + 1), 128, Texture::White);
@@ -21,31 +21,29 @@ Pacman::~Pacman() {
     delete e;
 }
 
-int Pacman::BLOCK_SIZE = ENTITY_SIZE * 2;
-int Pacman::gridStartPosX = WINDOW_WIDTH / 10 * 3;
-int Pacman::gridStartPosY = 0;
 int Pacman::pacmanSpriteSize = 80; // Becasue each sprite is 80 x 80
 
 void Pacman::init() {
+  for (Enemy *e : enemies) {
+    e->init(gameGrid);
+  }
+
   pacmanSrcRect.h = pacmanSrcRect.w = pacmanSpriteSize;
   pacmanSrcRect.y = pacmanSrcRect.x = animationCount = 0;
   pacmanDestRect.x = 0;
-  pacmanDestRect.y = gridStartPosY + BLOCK_SIZE + 5;
+  pacmanDestRect.y = gameGrid.startPosY + gameGrid.BLOCK_SIZE + 5;
   pacmanDestRect.h = pacmanDestRect.w = ENTITY_SIZE;
   pacmanSrcRect.x = 160;
   pacmanNextDirection = pacmanDirection = DirectionRight;
-
-  for (Enemy *e : enemies)
-    e->init(gridStartPosX, gridStartPosY, BLOCK_SIZE, gameGrid);
 
   state = StateStarting;
   startingStateTime = STARTING_STATE_TIME;
 }
 void Pacman::render() {
   SDL_Rect boxRect;
-  boxRect.x = gridStartPosX;
-  boxRect.y = gridStartPosY;
-  boxRect.w = boxRect.h = BLOCK_SIZE;
+  boxRect.x = gameGrid.startPosX;
+  boxRect.y = gameGrid.startPosY;
+  boxRect.w = boxRect.h = gameGrid.BLOCK_SIZE;
   for (int i = 0; i < GRID_HEIGHT; i++) {
     for (int j = 0; j < GRID_WIDTH; j++) {
 
@@ -71,16 +69,17 @@ void Pacman::render() {
         break;
       }
 
-      boxRect.x += BLOCK_SIZE;
+      boxRect.x += gameGrid.BLOCK_SIZE;
     }
-    boxRect.x = gridStartPosX;
-    boxRect.y += BLOCK_SIZE;
+    boxRect.x = gameGrid.startPosX;
+    boxRect.y += gameGrid.BLOCK_SIZE;
   }
   for (Enemy *e : enemies)
-    e->render();
+    e->render(gameGrid);
 
-  pacmanLocation.calculateCoordinateToRender(pacmanDestRect, gridStartPosX,
-                                             gridStartPosY, BLOCK_SIZE);
+  pacmanLocation.calculateCoordinateToRender(pacmanDestRect, gameGrid.startPosX,
+                                             gameGrid.startPosY,
+                                             gameGrid.BLOCK_SIZE);
   pacmanSprite.renderEX(&pacmanDestRect, &pacmanSrcRect, pacmanDirection);
 
   if (state == StateStarting) {

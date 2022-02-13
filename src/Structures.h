@@ -2,6 +2,7 @@
 #define GRID_WIDTH 20
 #define GRID_HEIGHT 25
 #include <SDL2/SDL.h>
+#include <ctime>
 
 enum Direction {
   DirectionRight = 0,
@@ -45,7 +46,8 @@ struct NodeWithParent {
 };
 
 struct EntityLocation {
-  short blockX, blockY; // GRID_HEIGHT * GRID_WIDTH
+  short blockX; // j
+  short blockY; // i
   short offsetX,
       offsetY; // 0 - 5, once you cross the offset, you get to new block
   static int offsetMax;
@@ -84,6 +86,7 @@ class Grid {
   int count;
 
 public:
+  int startPosX, startPosY, BLOCK_SIZE;
   Grid();
 
   /*
@@ -137,5 +140,15 @@ public:
    * if n2 and n1 are not neighbours returns a random direction
    */
   static Direction FindDirection(const Node *n1, const Node *n2);
+
+  bool isValidGridLocation(EntityLocation location) const {
+    return nodes[location.blockY][location.blockX].state != 0;
+  }
+  bool isValidGridLocation(int i, int j) const {
+    return nodes[i][j].state != 0;
+  }
+
+  EntityLocation getRandomGridLocation() const;
+
   friend class Pacman;
 };

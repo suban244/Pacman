@@ -1,4 +1,6 @@
 #include "Structures.h"
+#include "Enemy.h"
+#include "Game.h"
 #include <iostream>
 
 int Node::MAX_EDGES = 4;
@@ -88,6 +90,11 @@ Grid::Grid() {
       }
     }
   }
+  std::srand(std::time(nullptr));
+
+  BLOCK_SIZE = ENTITY_SIZE * 2;
+  startPosX = WINDOW_WIDTH / 10 * 3;
+  startPosY = 0;
 }
 
 void Grid::reset() {
@@ -230,4 +237,14 @@ bool Grid::canMove(const EntityLocation pacmanLocation, Grid &gameGrid,
     }
   }
   return false;
+}
+
+EntityLocation Grid::getRandomGridLocation() const {
+  int i, j;
+  while (true) {
+    i = std::rand() / ((RAND_MAX + 1u) / GRID_HEIGHT);
+    j = std::rand() / ((RAND_MAX + 1u) / GRID_WIDTH);
+    if (isValidGridLocation(i, j))
+      return EntityLocation(j, i);
+  }
 }

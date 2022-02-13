@@ -16,7 +16,7 @@ private:
 
   std::vector<Enemy *> enemies;
   Grid gameGrid;
-  static int BLOCK_SIZE, gridStartPosX, gridStartPosY, pacmanSpriteSize;
+  static int pacmanSpriteSize;
 
   int startingStateTime;
   Texture numTextures[3], WonTexture;

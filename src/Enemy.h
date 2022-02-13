@@ -17,22 +17,22 @@ enum EnemyType {
 };
 
 struct Enemy {
-  Texture sprite;
-  EntityLocation location;
-  SDL_Rect srcRect, destRect;
+  Texture texture;
+  EntityLocation baseLocation, location;
+  SDL_Rect destRect;
   Direction direction;
+
+  SDL_Rect srcRect;
   int animationCount;
 
   std::vector<Node *> pathToBeFollowed;
   EnemyType type;
 
-  int startPosX, startPosY, blockWidth;
-
-  Enemy(int i, int j, EnemyType type);
+  Enemy(Grid &gameGrid, int i, int j, EnemyType e);
   /*
    * sets some variables for rendering purposesses
    */
-  void init(int startPosX, int startPosY, int blockWidth, Grid &gameGrid);
+  void init(Grid &gameGrid);
 
   /*
    * @param enemyRect SDL_Rect of the adversary (pacman)
@@ -47,7 +47,7 @@ struct Enemy {
    */
   void update(Grid &gameGrid, EntityLocation &pacmanLocation);
 
-  void render();
+  void render(const Grid &gameGrid);
 
 private:
   /*

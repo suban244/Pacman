@@ -1,18 +1,19 @@
 #include "Enemy.h"
 #include "Structures.h"
 
-Enemy::Enemy(int i, int j, EnemyType type) : location(j, i), type(type) {
+Enemy::Enemy(Grid &gameGrid, int i, int j, EnemyType e)
+    : baseLocation(j, i), location(j, i), type(e) {
+
   destRect.w = destRect.h = ENTITY_SIZE;
-  sprite.loadFromFile("assets/enemy.png");
+  texture.loadFromFile("assets/enemy.png");
   std::srand(std::time(nullptr));
 }
-void Enemy::init(int startPosX, int startPosY, int blockWidth, Grid &gameGrid) {
-  this->startPosX = startPosX;
-  this->startPosY = startPosY;
-  this->blockWidth = blockWidth;
-  location.calculateCoordinateToRender(destRect, startPosX, startPosY,
-                                       blockWidth);
+void Enemy::init(Grid &gameGrid) {
+  location = EntityLocation(baseLocation);
+  location.calculateCoordinateToRender(destRect, gameGrid.startPosX,
+                                       gameGrid.startPosY, gameGrid.BLOCK_SIZE);
   direction = getRandomDirection(gameGrid);
+  pathToBeFollowed.clear();
 }
 
 void Enemy::update(Grid &gameGrid, EntityLocation &pacmanLocation) {
@@ -76,10 +77,10 @@ void Enemy::moveFullyRandom(Grid &gameGrid) {
   }
 }
 
-void Enemy::render() {
-  location.calculateCoordinateToRender(destRect, startPosX, startPosY,
-                                       blockWidth);
-  sprite.render(&destRect);
+void Enemy::render(const Grid &gameGrid) {
+  location.calculateCoordinateToRender(destRect, gameGrid.startPosX,
+                                       gameGrid.startPosY, gameGrid.BLOCK_SIZE);
+  texture.render(&destRect);
 }
 
 bool vectorContainsNode(std::vector<Node *> &vec, Node *node) {
