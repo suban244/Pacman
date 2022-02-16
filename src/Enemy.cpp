@@ -5,6 +5,7 @@ Enemy::Enemy(Grid &gameGrid, int i, int j, EnemyType e)
     : baseLocation(j, i), location(j, i), type(e) {
 
   destRect.w = destRect.h = ENTITY_SIZE;
+
   texture.loadFromFile("assets/enemy.png");
   std::srand(std::time(nullptr));
 }
@@ -14,37 +15,65 @@ void Enemy::init(Grid &gameGrid) {
                                        gameGrid.startPosY, gameGrid.BLOCK_SIZE);
   direction = getRandomDirection(gameGrid);
   pathToBeFollowed.clear();
+  state = EnemyStateChasing;
 }
 
 void Enemy::update(Grid &gameGrid, EntityLocation &pacmanLocation) {
   // TODO: Move the enemy object
 
   // DFS_search(gameGrid, pacmanLocation);
-  switch (type) {
-  case ENEMY_RANDOM:
-    moveFullyRandom(gameGrid);
-    break;
-  case ENEMY_RANDOM_STRAIGHT:
+  if (state == EnemyStateChasing) {
+    switch (type) {
+    case ENEMY_RANDOM:
+      moveFullyRandom(gameGrid);
+      break;
+    case ENEMY_RANDOM_STRAIGHT:
+      moveStrainghtRandom(gameGrid);
+      break;
+
+    case ENEMY_DFS_BAD:
+      moveWithDFS(gameGrid, pacmanLocation);
+      break;
+
+    case ENEMY_DFS_LESS_BAD:
+      moveWithDFS2(gameGrid, pacmanLocation);
+      break;
+
+    case ENEMY_BFS:
+      moveWithBFS(gameGrid, pacmanLocation);
+      break;
+    case ENEMY_EUCLIDEAN:
+      moveWithEuclideanDistance(gameGrid, pacmanLocation);
+      break;
+    default:
+      moveFullyRandom(gameGrid);
+    }
+  } else if (state == EnemyStateRunning) {
+    // runWithEculideanDistance(gameGrid, pacmanLocation);
     moveStrainghtRandom(gameGrid);
-    break;
-
-  case ENEMY_DFS_BAD:
-    moveWithDFS(gameGrid, pacmanLocation);
-    break;
-
-  case ENEMY_DFS_LESS_BAD:
-    moveWithDFS2(gameGrid, pacmanLocation);
-    break;
-
-  case ENEMY_BFS:
-    moveWithBFS(gameGrid, pacmanLocation);
-    break;
-  case ENEMY_EUCLIDEAN:
-    moveWithEuclideanDistance(gameGrid, pacmanLocation);
-    break;
-  default:
-    moveFullyRandom(gameGrid);
+  } else {
+    moveWithBFS(gameGrid, baseLocation);
+    if (inBaseLocation()) {
+      state = EnemyStateChasing;
+    } else {
+      moveWithBFS(gameGrid, baseLocation);
+      if (inBaseLocation())
+        state = EnemyStateChasing;
+    }
   }
+
+  location.calculateCoordinateToRender(destRect, gameGrid.startPosX,
+                                       gameGrid.startPosY, gameGrid.BLOCK_SIZE);
+}
+
+bool Enemy::inBaseLocation() {
+  if (location.offsetX != 0 || location.offsetY != 0)
+    return false;
+  if (location.blockX == baseLocation.blockX &&
+      location.blockY == baseLocation.blockY)
+    return true;
+  else
+    return false;
 }
 
 void Enemy::moveStrainghtRandom(Grid &gameGrid) {
@@ -77,10 +106,22 @@ void Enemy::moveFullyRandom(Grid &gameGrid) {
   }
 }
 
-void Enemy::render(const Grid &gameGrid) {
-  location.calculateCoordinateToRender(destRect, gameGrid.startPosX,
-                                       gameGrid.startPosY, gameGrid.BLOCK_SIZE);
-  texture.render(&destRect);
+void Enemy::render(const Grid &gameGrid, Texture &enemyRunningSprite,
+                   Texture &enemyResetingSprite, Uint8 alpha) {
+  switch (state) {
+  case EnemyStateChasing:
+    texture.setAlpha(alpha);
+    texture.render(&destRect);
+    break;
+  case EnemyStateRunning:
+    enemyRunningSprite.setAlpha(alpha);
+    enemyRunningSprite.render(&destRect);
+    break;
+  case EnemyStateReseting:
+    enemyResetingSprite.setAlpha(alpha);
+    enemyResetingSprite.render(&destRect);
+    break;
+  }
 }
 
 bool vectorContainsNode(std::vector<Node *> &vec, Node *node) {
@@ -129,10 +170,6 @@ void Enemy::moveWithBFS(Grid &gameGrid, EntityLocation &pacmanLocation) {
 
 Direction Enemy::DFS_search(Grid &gameGrid, EntityLocation &pacmanLocation,
                             std::vector<Node *> &pathFollowed) {
-  /*
-   * TODO: Hard
-   *
-   */
   std::stack<Node *> frontier;
   std::vector<Node *> explored;
 
@@ -308,6 +345,51 @@ void Enemy::moveWithEuclideanDistance(Grid &gameGrid,
   location.move(direction);
 }
 
+void Enemy::runWithEculideanDistance(Grid &gameGrid,
+                                     EntityLocation &pacmanLocation) {
+  // Top distance
+  if (location.atCenter()) {
+    float maxDistance = 0;
+    float dist;
+    Direction minDirection = DirectionUp;
+    if (Grid::canMove(location, gameGrid, DirectionUp)) {
+      dist = calcEuclideanDistance(pacmanLocation.blockX, pacmanLocation.blockY,
+                                   location.blockX, location.blockY - 1);
+      if (dist > maxDistance) {
+        maxDistance = dist;
+        minDirection = DirectionUp;
+      }
+    }
+    if (Grid::canMove(location, gameGrid, DirectionDown)) {
+      dist = calcEuclideanDistance(pacmanLocation.blockX, pacmanLocation.blockY,
+                                   location.blockX, location.blockY + 1);
+      if (dist > maxDistance) {
+        maxDistance = dist;
+        minDirection = DirectionDown;
+      }
+    }
+    if (Grid::canMove(location, gameGrid, DirectionLeft)) {
+      dist = calcEuclideanDistance(pacmanLocation.blockX, pacmanLocation.blockY,
+                                   location.blockX - 1, location.blockY);
+      if (dist > maxDistance) {
+        maxDistance = dist;
+        minDirection = DirectionLeft;
+      }
+    }
+    if (Grid::canMove(location, gameGrid, DirectionRight)) {
+      dist = calcEuclideanDistance(pacmanLocation.blockX, pacmanLocation.blockY,
+                                   location.blockX + 1, location.blockY);
+      if (dist > maxDistance) {
+        maxDistance = dist;
+        minDirection = DirectionRight;
+      }
+    }
+
+    direction = minDirection;
+  }
+  location.move(direction);
+}
+
 Direction Enemy::AStarSearch(Grid &gameGrid, EntityLocation &pacmanLocation,
                              std::vector<Node *> &pathFollowed) {
   /*
@@ -315,6 +397,8 @@ Direction Enemy::AStarSearch(Grid &gameGrid, EntityLocation &pacmanLocation,
    */
   return getRandomDirection(gameGrid);
 }
+
+void Enemy::reset() {}
 
 bool Enemy::detectColision(SDL_Rect &enemyRect) {
   /*
@@ -325,5 +409,11 @@ bool Enemy::detectColision(SDL_Rect &enemyRect) {
    * rectangle) Figure out if the rectangle overlap, if they do, return true
    * else false
    */
-  return false;
+  if (enemyRect.x <= destRect.x + destRect.w &&
+      enemyRect.x + enemyRect.w >= destRect.x &&
+      enemyRect.y <= destRect.y + destRect.h &&
+      enemyRect.y + enemyRect.h >= destRect.y)
+    return true;
+  else
+    return false;
 }

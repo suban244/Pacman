@@ -19,7 +19,14 @@ enum NodeState {
   NodeStatePower = 3
 };
 
-enum State { StateStarting, StatePlaying, StateWon, StateDied };
+enum State {
+  StateStarting,
+  StatePlaying,
+  StatePause,
+  StateWon,
+  StateLost,
+  StateJustDiead
+};
 
 struct MapInfo {};
 
@@ -27,7 +34,7 @@ class Pacman;
 
 struct Node {
   static int MAX_EDGES;
-  int state;
+  NodeState state;
   Node *edges[4];
   int i, j;
 
@@ -83,7 +90,7 @@ struct EntityLocation {
 class Grid {
   static int baseGrid[GRID_HEIGHT][GRID_WIDTH];
   Node nodes[GRID_HEIGHT][GRID_WIDTH];
-  int count;
+  int baseCount, currentCount;
 
 public:
   int startPosX, startPosY, BLOCK_SIZE;
@@ -114,7 +121,7 @@ public:
    * Pacman does his consuming thing here, returns true if there was something
    * to consume
    */
-  int consume(int i, int j);
+  NodeState consume(int i, int j);
 
   /*
    * Returns true if all the consumable's of the grid are consumed

@@ -16,11 +16,14 @@ enum EnemyType {
   ENEMY_EUCLIDEAN
 };
 
+enum EnemyState { EnemyStateRunning, EnemyStateChasing, EnemyStateReseting };
+
 struct Enemy {
   Texture texture;
   EntityLocation baseLocation, location;
   SDL_Rect destRect;
   Direction direction;
+  EnemyState state;
 
   SDL_Rect srcRect;
   int animationCount;
@@ -47,7 +50,8 @@ struct Enemy {
    */
   void update(Grid &gameGrid, EntityLocation &pacmanLocation);
 
-  void render(const Grid &gameGrid);
+  void render(const Grid &gameGrid, Texture &enemyRunningSprite,
+              Texture &enemyResetingSprite, Uint8 alpha = 255);
 
 private:
   /*
@@ -139,4 +143,12 @@ private:
 
   void moveWithEuclideanDistance(Grid &gameGrid,
                                  EntityLocation &pacmanLocation);
+
+  void runWithEculideanDistance(Grid &gameGrid, EntityLocation &pacmanLocation);
+
+  /*
+   * Enemy runs to its home square
+   */
+  void reset();
+  bool inBaseLocation();
 };

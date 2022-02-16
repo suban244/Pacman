@@ -3,6 +3,7 @@
 #include "GameState.h"
 #include "Structures.h"
 #define STARTING_STATE_TIME 120
+#define JUST_DIED_PAUSE_TIME 30
 
 class Pacman : public GameState {
 private:
@@ -10,9 +11,11 @@ private:
 
   Texture pacmanSprite;
   EntityLocation pacmanLocation;
+  int lives;
   SDL_Rect pacmanSrcRect, pacmanDestRect;
   Direction pacmanDirection, pacmanNextDirection;
   int animationCount;
+  Texture enemyRunningSprite, enemyResetingSprite;
 
   std::vector<Enemy *> enemies;
   Grid gameGrid;
@@ -20,6 +23,9 @@ private:
 
   int startingStateTime;
   Texture numTextures[3], WonTexture;
+  int pauseTime; // This for JUST_DIED_PAUSE_TIME
+
+  State stateBeforePause; // Stores state before the pause
 
 public:
   Pacman(StateMachine *s);
@@ -28,4 +34,8 @@ public:
   void handleInput(SDL_Event &event) override;
   void update() override;
   void render() override;
+
+  void resetBoard();
+  void pacmanGoToDefaultLocation();
+  void togglePause();
 };

@@ -73,13 +73,13 @@ int Grid::baseGrid[GRID_HEIGHT][GRID_WIDTH] = {
 };
 
 Grid::Grid() {
-  count = 0;
+  baseCount = 0;
   for (int i = 0; i < GRID_HEIGHT; i++) {
     for (int j = 0; j < GRID_WIDTH; j++) {
       nodes[i][j] = Node(i, j, NodeState(baseGrid[i][j]));
       if (baseGrid[i][j] != 0) {
         if (baseGrid[i][j] != 1)
-          count++;
+          baseCount++;
 
         if (i != 0)
           if (nodes[i - 1][j].state != 0)
@@ -90,6 +90,7 @@ Grid::Grid() {
       }
     }
   }
+  currentCount = baseCount;
   std::srand(std::time(nullptr));
 
   BLOCK_SIZE = ENTITY_SIZE * 2;
@@ -100,7 +101,8 @@ Grid::Grid() {
 void Grid::reset() {
   for (int i = 0; i < GRID_HEIGHT; i++)
     for (int j = 0; j < GRID_WIDTH; j++)
-      nodes[i][j].state = baseGrid[i][j];
+      nodes[i][j].state = NodeState(baseGrid[i][j]);
+  currentCount = baseCount;
 }
 
 bool Grid::areConnected(const Node *n1, const Node *n2) {
@@ -119,18 +121,18 @@ Node *Grid::getNode(int i, int j) {
   }
   return &nodes[i][j];
 }
-bool Grid::complete() { return count == 0; }
+bool Grid::complete() { return currentCount == 0; }
 
-int Grid::consume(int i, int j) {
+NodeState Grid::consume(int i, int j) {
   if (i >= GRID_HEIGHT || j >= GRID_WIDTH || i < 0 || j < 0) {
-    return 0;
+    return NodeStateEmpty;
   }
   if (nodes[i][j].state == NodeStateWall)
     std::cout << "Oh no" << std::endl;
-  int state = nodes[i][j].state;
+  NodeState state = nodes[i][j].state;
   nodes[i][j].state = NodeStateEmpty;
   if (state > NodeStateEmpty)
-    count--;
+    currentCount--;
   return state;
 }
 
