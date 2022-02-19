@@ -56,22 +56,26 @@ void MainScreen::handleInput(SDL_Event &e)
   switch (e.type)
   {
 
-  case SDL_SCANCODE_RETURN:
-    loadPacman();
-    break;
+  case SDL_KEYDOWN:
+    switch (e.key.keysym.sym)
+    {
+    case SDLK_RETURN:
+      loadPacman();
+      break;
+    case SDLK_m:
+      /*
+       * TODO:
+       * Write code to switch on the sound
+       */
+      break;
+    case SDLK_n:
+      /*
+       *TODO:
+       * Write code to switch off the sound
+       */
+      break;
+    }
 
-  case SDL_SCANCODE_M:
-    /*
-    TODO:
-    *   WRITE CODE TO SWITCH ON THE SOUND
-    */
-    break;
-
-  case SDL_SCANCODE_N:
-    /*
-     * TODO:
-     *   WRITE CODE TO SWITCH OFF THE SOUND
-     */
     break;
 
   default:
