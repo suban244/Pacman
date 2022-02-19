@@ -5,10 +5,15 @@
  * TODO: Time consuming
  * Make the main menu pretty
  */
-class MainScreen : public GameState {
+class MainScreen : public GameState
+{
 private:
   SDL_Rect startButtonRect;
   void loadPacman();
+  Texture pacmanIcon;
+  SDL_Rect pacmanIconRect;
+  Texture text;
+  SDL_Rect textRect;
 
 public:
   MainScreen(StateMachine *s);

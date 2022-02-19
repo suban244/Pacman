@@ -6,8 +6,11 @@
 #include <queue>
 #include <stack>
 #include <vector>
+#include <string>
+#include <sstream>
 #define ENTITY_SIZE 14
-enum EnemyType {
+enum EnemyType
+{
   ENEMY_RANDOM,
   ENEMY_RANDOM_STRAIGHT,
   ENEMY_DFS_BAD,
@@ -16,9 +19,15 @@ enum EnemyType {
   ENEMY_EUCLIDEAN
 };
 
-enum EnemyState { EnemyStateRunning, EnemyStateChasing, EnemyStateReseting };
+enum EnemyState
+{
+  EnemyStateRunning,
+  EnemyStateChasing,
+  EnemyStateReseting
+};
 
-struct Enemy {
+struct Enemy
+{
   Texture texture;
   EntityLocation baseLocation, location;
   SDL_Rect destRect;
