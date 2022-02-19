@@ -5,11 +5,11 @@ Pacman::Pacman(StateMachine *s) : GameState(s), pacmanLocation(1, 1) {
   /*
   enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_RANDOM_STRAIGHT));
   enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_DFS_LESS_BAD));
-  enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_BFS));
   enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_RANDOM));
+  enemies.push_back(new Enemy(gameGrid, 10, 10, ENEMY_EUCLIDEAN));
   */
 
-  enemies.push_back(new Enemy(gameGrid, 10, 10, ENEMY_EUCLIDEAN));
+  enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_BFS));
 
   for (int i = 0; i < 3; i++) {
     numTextures[i].loadSentence(std::to_string(i + 1), 128, Texture::White);
@@ -20,11 +20,23 @@ Pacman::Pacman(StateMachine *s) : GameState(s), pacmanLocation(1, 1) {
 
   enemyRunningSprite.loadFromFile("assets/running.png");
   enemyResetingSprite.loadFromFile("assets/reset.png");
+
+  chunkChomp = Mix_LoadWAV("assets/chomp.mp3");
+  chunkPower = Mix_LoadWAV("assets/powerup.mp3");
+  chunkEatEnemy = Mix_LoadWAV("assets/eat_enemy.mp3");
+  chunkGameover = Mix_LoadWAV("assets/gameover.mp3");
+  chunkDeath = Mix_LoadWAV("assets/death.mp3");
+  music = Mix_LoadMUS("assets/donkeyKongMusic.mp3");
+  Mix_VolumeMusic(VOLUME_PLAYING);
 }
 
 Pacman::~Pacman() {
   for (Enemy *e : enemies)
     delete e;
+  Mix_FreeChunk(chunkChomp);
+  Mix_FreeChunk(chunkDeath);
+  Mix_FreeChunk(chunkEatEnemy);
+  Mix_FreeChunk(chunkPower);
 }
 
 int Pacman::pacmanSpriteSize = 80; // Becasue each sprite is 80 x 80
@@ -45,6 +57,8 @@ void Pacman::init() {
 
   state = StateStarting;
   startingStateTime = STARTING_STATE_TIME;
+
+  Mix_PlayMusic(music, -1);
 }
 void Pacman::render() {
   Uint8 alpha = state == StatePause ? 100 : 255;
@@ -87,7 +101,7 @@ void Pacman::render() {
     boxRect.y += gameGrid.BLOCK_SIZE;
   }
 
-  if (state != StateJustDiead) {
+  if (state != StateJustDied) {
     for (Enemy *e : enemies)
       e->render(gameGrid, enemyRunningSprite, enemyResetingSprite, alpha);
 
@@ -128,6 +142,7 @@ void Pacman::update() {
     }
     return;
   case StatePlaying: {
+
     for (Enemy *e : enemies)
       e->update(gameGrid, pacmanLocation);
 
@@ -140,6 +155,7 @@ void Pacman::update() {
           std::cout << "OH NO" << std::endl;
           break;
         } else {
+          Mix_PlayChannel(-1, chunkEatEnemy, 0);
           e->state = EnemyStateReseting;
         }
       }
@@ -149,9 +165,15 @@ void Pacman::update() {
 
       NodeState nstate =
           gameGrid.consume(pacmanLocation.blockY, pacmanLocation.blockX);
+      if (nstate == NodeStatePoint)
+        Mix_PlayChannelTimed(-1, chunkChomp, 0, 300);
+      else if (nstate == NodeStatePower)
+        Mix_PlayChannel(-1, chunkPower, 0);
+
       if (nstate == NodeStatePower)
-        for (Enemy *e : enemies)
-          e->state = EnemyStateRunning;
+        for (Enemy *e : enemies) {
+          e->run();
+        }
 
       if (Grid::canMove(pacmanLocation, gameGrid, pacmanNextDirection)) {
         pacmanDirection = pacmanNextDirection;
@@ -168,11 +190,11 @@ void Pacman::update() {
     }
 
     animationCount++;
-    pacmanSrcRect.x = 80 * ((animationCount / 10) % 3);
+    pacmanSrcRect.x = 80 * ((animationCount / 5) % 5);
     break;
   }
 
-  case StateJustDiead:
+  case StateJustDied:
     pauseTime--;
     if (pauseTime <= 0) {
       state = StateStarting;
@@ -195,11 +217,14 @@ void Pacman::resetBoard() {
   for (Enemy *e : enemies)
     e->init(gameGrid);
 
-  state = StateJustDiead;
+  state = StateJustDied;
   pauseTime = JUST_DIED_PAUSE_TIME;
 
   if (lives == 0) {
     state = StateLost;
+    Mix_PlayChannel(-1, chunkGameover, 0);
+  } else {
+    Mix_PlayChannel(-1, chunkDeath, 0);
   }
 }
 
@@ -258,8 +283,10 @@ void Pacman::handleInput(SDL_Event &e) {
 void Pacman::togglePause() {
   if (state == StatePause) {
     state = stateBeforePause;
+    Mix_VolumeMusic(VOLUME_PLAYING);
   } else {
     stateBeforePause = state;
     state = StatePause;
+    Mix_VolumeMusic(VOLUME_PAUSED);
   }
 }

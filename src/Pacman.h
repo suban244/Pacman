@@ -2,8 +2,11 @@
 #include "Enemy.h"
 #include "GameState.h"
 #include "Structures.h"
+#include <SDL2/SDL_mixer.h>
 #define STARTING_STATE_TIME 120
 #define JUST_DIED_PAUSE_TIME 30
+#define VOLUME_PLAYING 40
+#define VOLUME_PAUSED 10
 
 class Pacman : public GameState {
 private:
@@ -26,6 +29,9 @@ private:
   int pauseTime; // This for JUST_DIED_PAUSE_TIME
 
   State stateBeforePause; // Stores state before the pause
+  Mix_Chunk *chunkChomp, *chunkDeath, *chunkPower, *chunkEatEnemy,
+      *chunkGameover;
+  Mix_Music *music;
 
 public:
   Pacman(StateMachine *s);

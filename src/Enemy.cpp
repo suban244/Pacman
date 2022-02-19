@@ -1,6 +1,10 @@
 #include "Enemy.h"
 #include "Structures.h"
 
+float calcEuclideanDistance(int x1, int y1, int x2, int y2) {
+  return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+}
+
 Enemy::Enemy(Grid &gameGrid, int i, int j, EnemyType e)
     : baseLocation(j, i), location(j, i), type(e) {
 
@@ -9,6 +13,7 @@ Enemy::Enemy(Grid &gameGrid, int i, int j, EnemyType e)
   texture.loadFromFile("assets/enemy.png");
   std::srand(std::time(nullptr));
 }
+
 void Enemy::init(Grid &gameGrid) {
   location = EntityLocation(baseLocation);
   location.calculateCoordinateToRender(destRect, gameGrid.startPosX,
@@ -45,11 +50,18 @@ void Enemy::update(Grid &gameGrid, EntityLocation &pacmanLocation) {
     case ENEMY_EUCLIDEAN:
       moveWithEuclideanDistance(gameGrid, pacmanLocation);
       break;
+    case ENEMY_ASTAR:
+      moveWithAStar(gameGrid, pacmanLocation);
+      break;
     default:
       moveFullyRandom(gameGrid);
     }
   } else if (state == EnemyStateRunning) {
     // runWithEculideanDistance(gameGrid, pacmanLocation);
+    runningTimer--;
+    if (runningTimer == 0) {
+      state = EnemyStateChasing;
+    }
     moveStrainghtRandom(gameGrid);
   } else {
     moveWithBFS(gameGrid, baseLocation);
@@ -114,8 +126,18 @@ void Enemy::render(const Grid &gameGrid, Texture &enemyRunningSprite,
     texture.render(&destRect);
     break;
   case EnemyStateRunning:
-    enemyRunningSprite.setAlpha(alpha);
-    enemyRunningSprite.render(&destRect);
+    if (runningTimer < ENEMY_RUNNING_TIMER_MAX / 10) {
+      if ((runningTimer / 6) % 2 == 0) {
+        texture.setAlpha(alpha);
+        texture.render(&destRect);
+      } else {
+        enemyRunningSprite.setAlpha(alpha);
+        enemyRunningSprite.render(&destRect);
+      }
+    } else {
+      enemyRunningSprite.setAlpha(alpha);
+      enemyRunningSprite.render(&destRect);
+    }
     break;
   case EnemyStateReseting:
     enemyResetingSprite.setAlpha(alpha);
@@ -124,13 +146,21 @@ void Enemy::render(const Grid &gameGrid, Texture &enemyRunningSprite,
   }
 }
 
-bool vectorContainsNode(std::vector<Node *> &vec, Node *node) {
-  bool contains = false;
-  for (Node *n : vec) {
-    if (n == node)
-      contains = true;
+int vectorContainsNode(std::vector<Node *> &vec, Node *node) {
+  size_t i = 0;
+  for (; i < vec.size(); i++) {
+    if (vec[i] == node)
+      return i;
   }
-  return contains;
+  return -1;
+}
+int vectorContainsBaseNode(std::vector<NodeWithParent *> &vec, Node *node) {
+  size_t i = 0;
+  for (; i < vec.size(); i++) {
+    if (vec[i]->baseNode == node)
+      return i;
+  }
+  return -1;
 }
 
 void Enemy::moveWithDFS2(Grid &gameGrid, EntityLocation &pacmanLocation) {
@@ -168,6 +198,14 @@ void Enemy::moveWithBFS(Grid &gameGrid, EntityLocation &pacmanLocation) {
   location.move(direction);
 }
 
+void Enemy::moveWithAStar(Grid &gameGrid, EntityLocation &pacmanLocation) {
+  if (location.atCenter()) {
+    std::vector<Node *> pathFollowed;
+    direction = AStarSearch(gameGrid, pacmanLocation, pathFollowed);
+  }
+  location.move(direction);
+}
+
 Direction Enemy::DFS_search(Grid &gameGrid, EntityLocation &pacmanLocation,
                             std::vector<Node *> &pathFollowed) {
   std::stack<Node *> frontier;
@@ -195,8 +233,8 @@ Direction Enemy::DFS_search(Grid &gameGrid, EntityLocation &pacmanLocation,
           break;
 
         // Check if the node is in explored
-        bool contains = vectorContainsNode(explored, temp->edges[i]);
-        if (!contains) {
+        int contains = vectorContainsNode(explored, temp->edges[i]);
+        if (contains == -1) {
           frontier.push(temp->edges[i]);
           nodeAdded = true;
         }
@@ -210,9 +248,9 @@ Direction Enemy::DFS_search(Grid &gameGrid, EntityLocation &pacmanLocation,
             if (pathFollowed.back()->edges[i] == nullptr)
               break;
 
-            bool contains =
+            int contains =
                 vectorContainsNode(explored, pathFollowed.back()->edges[i]);
-            if (!contains) {
+            if (contains == -1) {
               allExplored = false;
             }
           }
@@ -250,7 +288,9 @@ Direction Enemy::BFS_sarech(Grid &gameGrid, EntityLocation &pacmanLocation,
   frontier.push(startNode);
 
   NodeWithParent *temp;
+  int nodesExplored = 0;
   while (!frontier.empty()) {
+    nodesExplored++;
     temp = frontier.front();
     frontier.pop();
     explored.push_back(temp->baseNode);
@@ -265,8 +305,8 @@ Direction Enemy::BFS_sarech(Grid &gameGrid, EntityLocation &pacmanLocation,
         if (temp->baseNode->edges[i] == nullptr)
           break;
         // Check if the node is in explored
-        bool contains = vectorContainsNode(explored, temp->baseNode->edges[i]);
-        if (!contains) {
+        int contains = vectorContainsNode(explored, temp->baseNode->edges[i]);
+        if (contains == -1) {
           // temp->baseNode->edges[i])
           frontier.push(new NodeWithParent(temp->baseNode->edges[i], temp));
           addedNodes.push_back(frontier.back());
@@ -291,15 +331,16 @@ Direction Enemy::BFS_sarech(Grid &gameGrid, EntityLocation &pacmanLocation,
     delete addedNodes.back();
     addedNodes.pop_back();
   }
+
+  std::cout << "BFS Nodes Explored: " << nodesExplored << " "
+            << "Path of length:" << pathFollowed.size() << std::endl;
+
   if (pathFollowed.size() > 1) {
     return Grid::FindDirection(pathFollowed[0], pathFollowed[1]);
   } else
     return getRandomDirection(gameGrid);
 }
 
-float calcEuclideanDistance(int x1, int y1, int x2, int y2) {
-  return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
-}
 void Enemy::moveWithEuclideanDistance(Grid &gameGrid,
                                       EntityLocation &pacmanLocation) {
   // Top distance
@@ -389,12 +430,135 @@ void Enemy::runWithEculideanDistance(Grid &gameGrid,
   }
   location.move(direction);
 }
+bool cmpDjistra(NodeWithParent *n1, NodeWithParent *n2) {
+  float l1 = 0;
+  float l2 = 0;
+
+  NodeWithParent *temp;
+  for (temp = n1; temp != nullptr; temp = temp->parent)
+    l1++;
+
+  for (temp = n2; temp != nullptr; temp = temp->parent)
+    l2++;
+
+  return l1 > l2;
+};
+
+float calcCost(NodeWithParent *n, EntityLocation pacmanLocation) {
+  float cost = 0;
+  NodeWithParent *temp = n;
+
+  for (; temp != nullptr; temp = temp->parent)
+    cost++;
+
+  /*
+  cost *= cost;
+  cost += calcEuclideanDistance(n->baseNode->j, n->baseNode->i,
+                                pacmanLocation.blockX, pacmanLocation.blockY);
+                                */
+  cost = abs(n->baseNode->j - pacmanLocation.blockX) +
+         abs(n->baseNode->i - pacmanLocation.blockY);
+  return cost;
+}
 
 Direction Enemy::AStarSearch(Grid &gameGrid, EntityLocation &pacmanLocation,
                              std::vector<Node *> &pathFollowed) {
   /*
    * TODO
    */
+  pathToBeFollowed.clear();
+  auto cmp = [pacmanLocation](NodeWithParent *n1, NodeWithParent *n2) {
+    return calcCost(n1, pacmanLocation) > calcCost(n2, pacmanLocation);
+  };
+  std::priority_queue<NodeWithParent *, std::vector<NodeWithParent *>,
+                      decltype(cmp)>
+      frontier(cmp);
+
+  std::vector<Node *> explored;
+  std::vector<NodeWithParent *> addedNodes;
+
+  std::vector<NodeWithParent *> backups; // Becuase you cannot directly change
+                                         // values of items in priority_queue
+
+  NodeWithParent *startNode = new NodeWithParent(
+      gameGrid.getNode(location.blockY, location.blockX), nullptr);
+  addedNodes.push_back(startNode);
+
+  Node *destinationNode =
+      gameGrid.getNode(pacmanLocation.blockY, pacmanLocation.blockX);
+
+  frontier.push(startNode);
+
+  int nodesExplored = 0;
+
+  NodeWithParent *temp;
+  while (!frontier.empty()) {
+    nodesExplored++;
+    temp = frontier.top();
+    frontier.pop();
+    explored.push_back(temp->baseNode);
+    /*
+    std::cout << "For: (" << temp->baseNode->i << ", " << temp->baseNode->j
+              << "), cost: " << calcCost(temp, pacmanLocation) << std::endl;
+              */
+
+    bool nodeAdded = false;
+    for (int i = 0; i < 4; i++) {
+      if (temp->baseNode->edges[i] == nullptr)
+        break;
+      // Check if the node is in explored
+      int contains = vectorContainsBaseNode(backups, temp->baseNode->edges[i]);
+      NodeWithParent *newNode =
+          new NodeWithParent(temp->baseNode->edges[i], temp);
+
+      if (contains == -1) {
+        // temp->baseNode->edges[i])
+        backups.push_back(newNode);
+        frontier.push(newNode);
+        addedNodes.push_back(newNode);
+        nodeAdded = true;
+      } else {
+        contains = vectorContainsBaseNode(backups, temp->baseNode->edges[i]);
+        if (contains != -1) {
+          if (!cmpDjistra(newNode, backups[contains])) {
+            backups[contains]->parent = newNode->parent;
+            // Rearrange
+            std::make_heap(const_cast<NodeWithParent **>(&frontier.top()),
+                           const_cast<NodeWithParent **>(&frontier.top()) +
+                               frontier.size(),
+                           cmp);
+          }
+        }
+        delete newNode;
+      }
+    }
+    if (temp->baseNode == destinationNode)
+      break;
+    if (!nodeAdded) {
+      // Delete the nodewithparent
+
+      addedNodes.erase(std::remove(addedNodes.begin(), addedNodes.end(), temp),
+                       addedNodes.end());
+      delete temp;
+    }
+  }
+  while (temp) {
+    pathFollowed.insert(pathFollowed.begin(), temp->baseNode);
+    temp = temp->parent;
+  }
+  while (!addedNodes.empty()) {
+    delete addedNodes.back();
+    addedNodes.pop_back();
+  }
+
+  std::cout << "A* Nodes Explored: " << nodesExplored << " "
+            << "Path of length:" << pathFollowed.size() << std::endl;
+
+  if (pathFollowed.size() > 1) {
+    return Grid::FindDirection(pathFollowed[0], pathFollowed[1]);
+  } else
+    return getRandomDirection(gameGrid);
+
   return getRandomDirection(gameGrid);
 }
 
@@ -416,4 +580,9 @@ bool Enemy::detectColision(SDL_Rect &enemyRect) {
     return true;
   else
     return false;
+}
+
+void Enemy::run() {
+  state = EnemyStateRunning;
+  runningTimer = ENEMY_RUNNING_TIMER_MAX;
 }

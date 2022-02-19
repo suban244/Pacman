@@ -3,6 +3,8 @@
 #include <SDL2/SDL_mixer.h>
 
 SDL_Renderer *Game::renderer = nullptr;
+bool Game::playMusic = true;
+bool Game::playSoundEffect = true;
 
 Game::Game() {}
 
@@ -38,6 +40,14 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height,
     // Opacity power
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
+    // load support for the OGG and MOD sample/music formats
+    int flags = MIX_INIT_OGG | MIX_INIT_MOD | MIX_INIT_MP3;
+    int initted = Mix_Init(flags);
+    if ((initted & flags) != flags) {
+      printf("Mix_Init: Failed to init required ogg and mod support!\n");
+      printf("Mix_Init: %s\n", Mix_GetError());
+      // handle error
+    }
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
       printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n",
              Mix_GetError());

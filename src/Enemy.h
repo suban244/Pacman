@@ -3,31 +3,27 @@
 #include "Texture.h"
 #include <algorithm>
 #include <ctime>
+#include <math.h>
 #include <queue>
-#include <stack>
-#include <vector>
-#include <string>
 #include <sstream>
+#include <stack>
+#include <string>
+#include <vector>
 #define ENTITY_SIZE 14
-enum EnemyType
-{
+#define ENEMY_RUNNING_TIMER_MAX 600
+enum EnemyType {
   ENEMY_RANDOM,
   ENEMY_RANDOM_STRAIGHT,
   ENEMY_DFS_BAD,
   ENEMY_DFS_LESS_BAD,
   ENEMY_BFS,
-  ENEMY_EUCLIDEAN
+  ENEMY_EUCLIDEAN,
+  ENEMY_ASTAR
 };
 
-enum EnemyState
-{
-  EnemyStateRunning,
-  EnemyStateChasing,
-  EnemyStateReseting
-};
+enum EnemyState { EnemyStateRunning, EnemyStateChasing, EnemyStateReseting };
 
-struct Enemy
-{
+struct Enemy {
   Texture texture;
   EntityLocation baseLocation, location;
   SDL_Rect destRect;
@@ -36,6 +32,7 @@ struct Enemy
 
   SDL_Rect srcRect;
   int animationCount;
+  int runningTimer;
 
   std::vector<Node *> pathToBeFollowed;
   EnemyType type;
@@ -61,6 +58,8 @@ struct Enemy
 
   void render(const Grid &gameGrid, Texture &enemyRunningSprite,
               Texture &enemyResetingSprite, Uint8 alpha = 255);
+
+  void run();
 
 private:
   /*
@@ -149,6 +148,7 @@ private:
    * And then moves pacman in the direction suggested by DFS
    */
   void moveWithBFS(Grid &gameGrid, EntityLocation &pacmanLocation);
+  void moveWithAStar(Grid &gameGrid, EntityLocation &pacmanLocation);
 
   void moveWithEuclideanDistance(Grid &gameGrid,
                                  EntityLocation &pacmanLocation);

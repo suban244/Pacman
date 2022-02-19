@@ -25,7 +25,7 @@ enum State {
   StatePause,
   StateWon,
   StateLost,
-  StateJustDiead
+  StateJustDied
 };
 
 struct MapInfo {};
@@ -45,11 +45,6 @@ struct Node {
    */
   Node(int i = 0, int j = 0, NodeState state = NodeStateWall);
   void addNode(Node *edgeNode);
-};
-struct NodeWithParent {
-  NodeWithParent *parent;
-  Node *baseNode;
-  NodeWithParent(Node *baseNode, NodeWithParent *parent);
 };
 
 struct EntityLocation {
@@ -85,6 +80,12 @@ struct EntityLocation {
    * returns true if entity is at the center of a block
    */
   bool atCenter() const;
+};
+
+struct NodeWithParent {
+  NodeWithParent *parent;
+  Node *baseNode;
+  NodeWithParent(Node *baseNode, NodeWithParent *parent);
 };
 
 class Grid {

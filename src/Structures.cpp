@@ -56,9 +56,9 @@ int Grid::baseGrid[GRID_HEIGHT][GRID_WIDTH] = {
     {0, 2, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 2, 0},
     {0, 2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 2, 2, 0},
     {0, 0, 2, 2, 2, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 2, 2, 2, 0, 0},
-    {0, 2, 2, 0, 0, 2, 2, 2, 0, 0, 0, 0, 2, 2, 2, 0, 0, 2, 2, 0},
+    {0, 2, 2, 0, 0, 2, 2, 2, 0, 0, 1, 0, 2, 2, 2, 0, 0, 2, 2, 0},
     {0, 0, 3, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 3, 0, 0},
-    {0, 2, 2, 0, 0, 2, 2, 2, 0, 0, 0, 0, 2, 2, 2, 0, 0, 2, 2, 0},
+    {0, 2, 2, 0, 0, 2, 2, 2, 0, 1, 0, 0, 2, 2, 2, 0, 0, 2, 2, 0},
     {0, 0, 2, 2, 2, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 2, 2, 2, 0, 0},
     {0, 2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 2, 2, 0},
     {0, 2, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 2, 0},
@@ -156,7 +156,7 @@ Direction Grid::FindDirection(const Node *n1, const Node *n2) {
 EntityLocation::EntityLocation(int startX, int startY)
     : blockX(startX), blockY(startY), offsetX(0), offsetY(0) {}
 
-int EntityLocation::offsetMax = 10; // 0 1 2 3 4
+int EntityLocation::offsetMax = 12; // 0 1 2 3 4
 bool EntityLocation::move(bool positiveDirection, bool XDirection) {
   /*
    * return true if we have a block change

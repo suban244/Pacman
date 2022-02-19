@@ -26,6 +26,7 @@ public:
   bool running();
 
   static SDL_Renderer *renderer;
+  static bool playMusic, playSoundEffect;
 
   void createGameBoard(std::string name0, std::string name1,
                        int _startTimeInMinutes = 10, bool _useEngine = false);

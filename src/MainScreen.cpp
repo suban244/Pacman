@@ -3,13 +3,13 @@
 #include "GameState.h"
 #include "Pacman.h"
 
-bool buttonPress(SDL_Rect &rect, int x, int y)
-{
+bool buttonPress(SDL_Rect &rect, int x, int y) {
   return x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
 }
 
-MainScreen::MainScreen(StateMachine *s) : GameState(s)
-{
+MainScreen::~MainScreen() { Mix_FreeMusic(music); }
+
+MainScreen::MainScreen(StateMachine *s) : GameState(s) {
   pacmanIconRect.x = 400;
   pacmanIconRect.y = 30;
   pacmanIconRect.w = 500;
@@ -27,20 +27,21 @@ MainScreen::MainScreen(StateMachine *s) : GameState(s)
   soundTextRect.w = 500;
   soundTextRect.h = 200;
   soundText.loadFromFile("assets/sound.png");
+
+  music = Mix_LoadMUS("assets/pacman_beginning.wav");
 }
 
-void MainScreen::loadPacman()
-{
+void MainScreen::loadPacman() {
   stateMachineRef->AddState(new Pacman(stateMachineRef));
 }
 
-void MainScreen::init()
-{
+void MainScreen::init() {
   // startButtonRect.h = startButtonRect.w = startButtonRect.x =
   //   startButtonRect.y = 50;
+  Mix_VolumeMusic(4);
+  Mix_PlayMusic(music, -1);
 }
-void MainScreen::render()
-{
+void MainScreen::render() {
   SDL_SetRenderDrawColor(Game::renderer, 100, 100, 100, 255);
   SDL_RenderFillRect(Game::renderer, &startButtonRect);
   pacmanIcon.render(&pacmanIconRect);
@@ -48,31 +49,26 @@ void MainScreen::render()
   soundText.render(&soundTextRect);
 }
 
-void MainScreen::handleInput(SDL_Event &e)
-{
+void MainScreen::handleInput(SDL_Event &e) {
 
+  /*
   int x = e.button.x;
   int y = e.button.y;
-  switch (e.type)
-  {
+  */
+  switch (e.type) {
 
   case SDL_KEYDOWN:
-    switch (e.key.keysym.sym)
-    {
+    switch (e.key.keysym.sym) {
     case SDLK_RETURN:
       loadPacman();
       break;
     case SDLK_m:
-      /*
-       * TODO:
-       * Write code to switch on the sound
-       */
+      Mix_ResumeMusic();
+      Game::playMusic = true;
       break;
     case SDLK_n:
-      /*
-       *TODO:
-       * Write code to switch off the sound
-       */
+      Mix_PauseMusic();
+      Game::playMusic = false;
       break;
     }
 
