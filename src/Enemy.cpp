@@ -147,6 +147,9 @@ void Enemy::render(const Grid &gameGrid, Texture &enemyRunningSprite,
 }
 
 int vectorContainsNode(std::vector<Node *> &vec, Node *node) {
+  if (node == nullptr)
+    return -1;
+
   size_t i = 0;
   for (; i < vec.size(); i++) {
     if (vec[i] == node)
@@ -456,8 +459,8 @@ float calcCost(NodeWithParent *n, EntityLocation pacmanLocation) {
   cost += calcEuclideanDistance(n->baseNode->j, n->baseNode->i,
                                 pacmanLocation.blockX, pacmanLocation.blockY);
                                 */
-  cost = abs(n->baseNode->j - pacmanLocation.blockX) +
-         abs(n->baseNode->i - pacmanLocation.blockY);
+  cost += abs(n->baseNode->j - pacmanLocation.blockX) +
+          abs(n->baseNode->i - pacmanLocation.blockY);
   return cost;
 }
 
@@ -466,100 +469,111 @@ Direction Enemy::AStarSearch(Grid &gameGrid, EntityLocation &pacmanLocation,
   /*
    * TODO
    */
-  pathToBeFollowed.clear();
-  auto cmp = [pacmanLocation](NodeWithParent *n1, NodeWithParent *n2) {
-    return calcCost(n1, pacmanLocation) > calcCost(n2, pacmanLocation);
-  };
-  std::priority_queue<NodeWithParent *, std::vector<NodeWithParent *>,
-                      decltype(cmp)>
-      frontier(cmp);
-
-  std::vector<Node *> explored;
-  std::vector<NodeWithParent *> addedNodes;
-
-  std::vector<NodeWithParent *> backups; // Becuase you cannot directly change
-                                         // values of items in priority_queue
-
-  NodeWithParent *startNode = new NodeWithParent(
-      gameGrid.getNode(location.blockY, location.blockX), nullptr);
-  addedNodes.push_back(startNode);
-
+  pathFollowed.clear();
   Node *destinationNode =
       gameGrid.getNode(pacmanLocation.blockY, pacmanLocation.blockX);
 
-  frontier.push(startNode);
+  std::unordered_map<Node *, Node *> parentMap;
+  std::vector<Node *> parentMapKeys; // Vector of all the keys of parent map
 
+  auto reconstructPath = [&pathFollowed, &parentMap, &parentMapKeys](Node *n) {
+    pathFollowed.push_back(n);
+    while (vectorContainsNode(parentMapKeys, n)) {
+      n = parentMap[n];
+      if (n == nullptr)
+        break;
+      pathFollowed.push_back(n);
+    }
+    n = parentMap[n];
+    if (n)
+      pathFollowed.push_back(n);
+  };
+
+  std::unordered_map<Node *, int> gScoreMap; // Cheapest path fron start to n
+  std::unordered_map<Node *, int> fscoreMap; // gscore(n) + h(n)
+
+  auto gScore = [&gScoreMap](Node *n) {
+    try {
+      return gScoreMap.at(n);
+    } catch (std::out_of_range const &) {
+      return 100000;
+    }
+  };
+  auto fscore = [&fscoreMap](Node *n) {
+    try {
+      return fscoreMap.at(n);
+    } catch (std::out_of_range const &) {
+      return 100000;
+    }
+  };
+
+  auto h = [pacmanLocation](Node *n) {
+    return abs(n->j - pacmanLocation.blockX) +
+           abs(n->i - pacmanLocation.blockY);
+  };
+
+  /*
+  auto calcCost = [&parentMap, h](Node *n, EntityLocation pacmanLocation) {
+    float cost = 0;
+    Node *temp = n;
+    for (; temp != nullptr; temp = parentMap.at(n))
+      cost++;
+    cost += h(n);
+    return cost;
+  };
+  */
+
+  auto cmp = [fscore](Node *n1, Node *n2) { return fscore(n1) > fscore(n2); };
+
+  std::priority_queue<Node *, std::vector<Node *>, decltype(cmp)> frontier(cmp);
+
+  Node *temp, *neighbor;
   int nodesExplored = 0;
+  frontier.push(gameGrid.getNode(location.blockY, location.blockX));
 
-  NodeWithParent *temp;
+  gScoreMap[frontier.top()] = 0;
+  fscoreMap[frontier.top()] = h(frontier.top());
+
   while (!frontier.empty()) {
     nodesExplored++;
     temp = frontier.top();
+
+    if (temp == destinationNode) {
+      // YAY
+      // Reconstruct path
+      reconstructPath(temp);
+      break;
+    }
+
     frontier.pop();
-    explored.push_back(temp->baseNode);
-    /*
-    std::cout << "For: (" << temp->baseNode->i << ", " << temp->baseNode->j
-              << "), cost: " << calcCost(temp, pacmanLocation) << std::endl;
-              */
 
-    bool nodeAdded = false;
     for (int i = 0; i < 4; i++) {
-      if (temp->baseNode->edges[i] == nullptr)
+      neighbor = temp->edges[i];
+      if (neighbor == nullptr)
         break;
-      // Check if the node is in explored
-      int contains = vectorContainsBaseNode(backups, temp->baseNode->edges[i]);
-      NodeWithParent *newNode =
-          new NodeWithParent(temp->baseNode->edges[i], temp);
+      float tentative_gScore = gScore(temp) + 1;
+      if (tentative_gScore < gScore(neighbor)) {
 
-      if (contains == -1) {
-        // temp->baseNode->edges[i])
-        backups.push_back(newNode);
-        frontier.push(newNode);
-        addedNodes.push_back(newNode);
-        nodeAdded = true;
-      } else {
-        contains = vectorContainsBaseNode(backups, temp->baseNode->edges[i]);
-        if (contains != -1) {
-          if (!cmpDjistra(newNode, backups[contains])) {
-            backups[contains]->parent = newNode->parent;
-            // Rearrange
-            std::make_heap(const_cast<NodeWithParent **>(&frontier.top()),
-                           const_cast<NodeWithParent **>(&frontier.top()) +
-                               frontier.size(),
-                           cmp);
-          }
+        parentMap[neighbor] = temp;
+        parentMapKeys.push_back(neighbor);
+
+        gScoreMap[neighbor] = tentative_gScore;
+        fscoreMap[neighbor] = tentative_gScore + h(neighbor);
+
+        if (vectorContainsNode(parentMapKeys, neighbor) != -1) {
+          frontier.push(neighbor);
         }
-        delete newNode;
       }
     }
-    if (temp->baseNode == destinationNode)
-      break;
-    if (!nodeAdded) {
-      // Delete the nodewithparent
-
-      addedNodes.erase(std::remove(addedNodes.begin(), addedNodes.end(), temp),
-                       addedNodes.end());
-      delete temp;
-    }
   }
-  while (temp) {
-    pathFollowed.insert(pathFollowed.begin(), temp->baseNode);
-    temp = temp->parent;
-  }
-  while (!addedNodes.empty()) {
-    delete addedNodes.back();
-    addedNodes.pop_back();
-  }
-
   std::cout << "A* Nodes Explored: " << nodesExplored << " "
             << "Path of length:" << pathFollowed.size() << std::endl;
 
   if (pathFollowed.size() > 1) {
-    return Grid::FindDirection(pathFollowed[0], pathFollowed[1]);
+    return Grid::FindDirection(pathFollowed[pathFollowed.size() - 1],
+                               pathFollowed[pathFollowed.size() - 2]);
   } else
     return getRandomDirection(gameGrid);
-
-  return getRandomDirection(gameGrid);
 }
 
 void Enemy::reset() {}

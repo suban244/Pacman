@@ -8,6 +8,7 @@
 #include <sstream>
 #include <stack>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #define ENTITY_SIZE 14
 #define ENEMY_RUNNING_TIMER_MAX 600

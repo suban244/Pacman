@@ -9,7 +9,8 @@ Pacman::Pacman(StateMachine *s) : GameState(s), pacmanLocation(1, 1) {
   enemies.push_back(new Enemy(gameGrid, 10, 10, ENEMY_EUCLIDEAN));
   */
 
-  enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_BFS));
+  // enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_BFS));
+  enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_ASTAR));
 
   for (int i = 0; i < 3; i++) {
     numTextures[i].loadSentence(std::to_string(i + 1), 128, Texture::White);
