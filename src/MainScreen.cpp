@@ -11,16 +11,22 @@ bool buttonPress(SDL_Rect &rect, int x, int y)
 MainScreen::MainScreen(StateMachine *s) : GameState(s)
 {
   pacmanIconRect.x = 400;
-  pacmanIconRect.y = 100;
+  pacmanIconRect.y = 30;
   pacmanIconRect.w = 500;
   pacmanIconRect.h = 100;
   pacmanIcon.loadFromFile("assets/pacmanIcon.png");
 
   textRect.x = 300;
-  textRect.y = 400;
+  textRect.y = 200;
   textRect.w = 800;
   textRect.h = 300;
   text.loadFromFile("assets/new.jpg");
+
+  soundTextRect.x = 370;
+  soundTextRect.y = 470;
+  soundTextRect.w = 500;
+  soundTextRect.h = 200;
+  soundText.loadFromFile("assets/sound.png");
 }
 
 void MainScreen::loadPacman()
@@ -39,6 +45,7 @@ void MainScreen::render()
   SDL_RenderFillRect(Game::renderer, &startButtonRect);
   pacmanIcon.render(&pacmanIconRect);
   text.render(&textRect);
+  soundText.render(&soundTextRect);
 }
 
 void MainScreen::handleInput(SDL_Event &e)
@@ -53,8 +60,18 @@ void MainScreen::handleInput(SDL_Event &e)
     loadPacman();
     break;
 
-  case SDL_KEYDOWN:
-    loadPacman();
+  case SDL_SCANCODE_M:
+    /*
+    TODO:
+    *   WRITE CODE TO SWITCH ON THE SOUND
+    */
+    break;
+
+  case SDL_SCANCODE_N:
+    /*
+     * TODO:
+     *   WRITE CODE TO SWITCH OFF THE SOUND
+     */
     break;
 
   default:

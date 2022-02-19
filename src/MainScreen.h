@@ -14,6 +14,8 @@ private:
   SDL_Rect pacmanIconRect;
   Texture text;
   SDL_Rect textRect;
+  Texture soundText;
+  SDL_Rect soundTextRect;
 
 public:
   MainScreen(StateMachine *s);
