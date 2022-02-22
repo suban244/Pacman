@@ -32,9 +32,21 @@ Pacman::Pacman(StateMachine *s)
   music = Mix_LoadMUS("assets/donkeyKongMusic.mp3");
   Mix_VolumeMusic(VOLUME_PLAYING);
 
+  scoreTexture.loadSentence("Score", 32, Texture::White);
+  scoreTexture.queryTexture(scoreRect.w, scoreRect.h);
+  scoreAmountTexture.loadSentence(std::to_string(0), 32, Texture::White);
+
   pause.addOption("Continue", &Pacman::togglePause);
   pause.addOption("Main Menu", &Pacman::returnToMainScreen);
   pause.addOption("Quit", &Pacman::quit);
+
+  gameover.addOption("Retry", &Pacman::init);
+  gameover.addOption("Quit", &Pacman::quit);
+  gameover.addOption("Main Menu", &Pacman::returnToMainScreen);
+
+  win.addOption("Play Again", &Pacman::init);
+  win.addOption("Main Menu", &Pacman::returnToMainScreen);
+  win.addOption("Quit", &Pacman::quit);
 }
 
 Pacman::~Pacman() {
@@ -50,6 +62,12 @@ int Pacman::pacmanSpriteSize = 80; // Becasue each sprite is 80 x 80
 
 void Pacman::init() {
   lives = 3;
+
+  score = 0;
+  oldScore = score;
+  scoringWindow = -1;
+  scoreFactor = 1;
+
   for (Enemy *e : enemies) {
     e->init(gameGrid);
   }
@@ -66,6 +84,9 @@ void Pacman::init() {
   startingStateTime = STARTING_STATE_TIME;
 
   Mix_PlayMusic(music, -1);
+  scoreAmountTexture.loadSentence(std::to_string(score), 32, Texture::White);
+  scoreAmountTexture.queryTexture(scoreAmountRect.w, scoreAmountRect.h);
+  gameGrid.reset();
 }
 void Pacman::render() {
   Uint8 alpha = state == StatePause ? 100 : 255;
@@ -137,8 +158,19 @@ void Pacman::render() {
     boxRect.x += boxRect.h;
   }
 
+  // Rendering Score
+  scoreRect.y = boxRect.y + 2 * boxRect.h;
+  scoreRect.x =
+      gameGrid.startPosX + gameGrid.BLOCK_SIZE * GRID_WIDTH + boxRect.h;
+  scoreTexture.render(&scoreRect);
+  scoreAmountRect.y = scoreRect.y + 20;
+  scoreAmountRect.x = scoreRect.x;
+  scoreAmountTexture.render(&scoreAmountRect);
+
   if (state == StatePause) {
     pause.render();
+  } else if (state == StateLost) {
+    gameover.render();
   }
 }
 void Pacman::update() {
@@ -160,13 +192,23 @@ void Pacman::update() {
       if (colision) {
         if (e->state == EnemyStateChasing) {
           resetBoard();
-          std::cout << "OH NO" << std::endl;
           break;
         } else {
           Mix_PlayChannel(-1, chunkEatEnemy, 0);
+
+          if (scoringWindow >= 0 && e->state != EnemyStateReseting) {
+            score += scoreFactor;
+            scoreFactor *= 2;
+          }
           e->state = EnemyStateReseting;
         }
       }
+    }
+
+    if (scoringWindow >= 0) {
+      scoringWindow--;
+    } else {
+      scoreFactor = 1;
     }
 
     if (pacmanLocation.atCenter()) {
@@ -178,10 +220,12 @@ void Pacman::update() {
       else if (nstate == NodeStatePower)
         Mix_PlayChannel(-1, chunkPower, 0);
 
-      if (nstate == NodeStatePower)
+      if (nstate == NodeStatePower) {
         for (Enemy *e : enemies) {
           e->run();
         }
+        scoringWindow = ENEMY_RUNNING_TIMER_MAX;
+      }
 
       if (Grid::canMove(pacmanLocation, gameGrid, pacmanNextDirection)) {
         pacmanDirection = pacmanNextDirection;
@@ -215,6 +259,11 @@ void Pacman::update() {
 
   default:
     return;
+  }
+  if (oldScore != score) {
+    oldScore = score;
+    scoreAmountTexture.loadSentence(std::to_string(score), 32, Texture::White);
+    scoreAmountTexture.queryTexture(scoreAmountRect.w, scoreAmountRect.h);
   }
 }
 
@@ -276,6 +325,8 @@ void Pacman::handleInput(SDL_Event &e) {
     }
   } else if (state == StatePause) {
     pause.handleInput(e, this);
+  } else if (state == StateLost) {
+    gameover.handleInput(e, this);
   }
 }
 // Maybe use a tempr to track the direction for some time

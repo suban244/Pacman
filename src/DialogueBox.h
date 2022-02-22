@@ -9,10 +9,10 @@ typedef void (Pacman::*Callbacks)();
 struct Button {
   std::string name;
   Callbacks onClick;
-  Texture texture, TextureSelected;
+  Texture texture, textureSelected;
   SDL_Rect textureRect, textureSelectedRect;
   Button(std::string name, Callbacks onClick, SDL_Rect &baseRect);
-  void render();
+  void render(bool isSelected = false);
 };
 
 class DialogueBox {
@@ -22,7 +22,7 @@ class DialogueBox {
   SDL_Rect nameRect;
 
   std::vector<Button *> buttons;
-  int buttonIndex;
+  size_t buttonIndex;
 
 public:
   DialogueBox(std::string name);

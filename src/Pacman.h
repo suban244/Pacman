@@ -36,6 +36,10 @@ private:
 
   DialogueBox pause, gameover, win;
 
+  int score, scoringWindow, scoreFactor, oldScore;
+  Texture scoreTexture, scoreAmountTexture;
+  SDL_Rect scoreRect, scoreAmountRect;
+
 public:
   Pacman(StateMachine *s);
   ~Pacman();

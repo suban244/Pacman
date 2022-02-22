@@ -68,10 +68,13 @@ void Enemy::update(Grid &gameGrid, EntityLocation &pacmanLocation) {
     moveWithBFS(gameGrid, baseLocation);
     if (inBaseLocation()) {
       state = EnemyStateChasing;
+      pathToBeFollowed.clear();
     } else {
       moveWithBFS(gameGrid, baseLocation);
-      if (inBaseLocation())
+      if (inBaseLocation()) {
         state = EnemyStateChasing;
+        pathToBeFollowed.clear();
+      }
     }
   }
 
@@ -336,8 +339,10 @@ Direction Enemy::BFS_sarech(Grid &gameGrid, EntityLocation &pacmanLocation,
     addedNodes.pop_back();
   }
 
+  /*
   std::cout << "BFS Nodes Explored: " << nodesExplored << " "
             << "Path of length:" << pathFollowed.size() << std::endl;
+            */
 
   if (pathFollowed.size() > 1) {
     return Grid::FindDirection(pathFollowed[0], pathFollowed[1]);
@@ -567,8 +572,10 @@ Direction Enemy::AStarSearch(Grid &gameGrid, EntityLocation &pacmanLocation,
       }
     }
   }
+  /*
   std::cout << "A* Nodes Explored: " << nodesExplored << " "
             << "Path of length:" << pathFollowed.size() << std::endl;
+            */
 
   if (pathFollowed.size() > 1) {
     return Grid::FindDirection(pathFollowed[pathFollowed.size() - 1],

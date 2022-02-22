@@ -4,14 +4,30 @@
 Button::Button(std::string name, Callbacks onClick, SDL_Rect &baseRect)
     : name(name), onClick(onClick) {
   texture.loadSentence(name, 24, Texture::White);
+  textureSelected.loadSentence(name, 28, Texture::Red);
 
   texture.queryTexture(textureRect.w, textureRect.h);
+  textureSelected.queryTexture(textureSelectedRect.w, textureSelectedRect.h);
+
   textureRect.y = baseRect.y + baseRect.h - BUFFER / 2;
-  baseRect.h += textureRect.h + BUFFER / 2;
+  textureSelectedRect.y = baseRect.y + baseRect.h - BUFFER / 2;
+
+  baseRect.h += textureSelectedRect.h + BUFFER / 2;
+  if (textureSelectedRect.w + 2 * BUFFER > baseRect.w) {
+    baseRect.x = WINDOW_WIDTH / 2 - textureSelectedRect.w / 2 - BUFFER;
+    baseRect.w = textureSelectedRect.w + 2 * BUFFER;
+  }
+
   textureRect.x = WINDOW_WIDTH / 2 - textureRect.w / 2;
+  textureSelectedRect.x = WINDOW_WIDTH / 2 - textureSelectedRect.w / 2;
 }
 
-void Button::render() { texture.render(&textureRect); }
+void Button::render(bool isSelected) {
+  if (isSelected)
+    textureSelected.render(&textureSelectedRect);
+  else
+    texture.render(&textureRect);
+}
 
 DialogueBox::DialogueBox(std::string name) {
   int centerX = WINDOW_WIDTH / 2;
@@ -44,7 +60,7 @@ void DialogueBox::render() {
   SDL_RenderFillRect(Game::renderer, &baseRect);
   nameTexture.render(&nameRect);
   for (size_t i = 0; i < buttons.size(); i++) {
-    buttons[i]->render();
+    buttons[i]->render(i == buttonIndex);
   }
 }
 
@@ -63,7 +79,7 @@ void DialogueBox::handleInput(SDL_Event &e, Pacman *pacmanObject) {
         buttonIndex--;
       break;
     case SDLK_s:
-      if (buttonIndex < int(buttons.size()) - 1)
+      if (buttonIndex < buttons.size() - 1)
         buttonIndex++;
     default:
       break;
