@@ -78,7 +78,10 @@ void Game::handleEvents() {
   }
 
   default:
-    stateMachine.getActiveState()->handleInput(event);
+    if (stateMachine.isEmpty())
+      isRunning = false;
+    else
+      stateMachine.getActiveState()->handleInput(event);
     break;
   };
 }
@@ -86,7 +89,11 @@ void Game::handleEvents() {
 void Game::update() {
   count++;
   stateMachine.processStateChanges();
-  stateMachine.getActiveState()->update();
+
+  if (stateMachine.isEmpty())
+    isRunning = false;
+  else
+    stateMachine.getActiveState()->update();
 }
 void Game::render() {
 
@@ -94,7 +101,10 @@ void Game::render() {
   SDL_RenderClear(renderer);
 
   // Do Rendering
-  stateMachine.getActiveState()->render();
+  if (stateMachine.isEmpty())
+    isRunning = false;
+  else
+    stateMachine.getActiveState()->render();
 
   SDL_RenderPresent(renderer);
 }

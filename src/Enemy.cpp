@@ -61,6 +61,7 @@ void Enemy::update(Grid &gameGrid, EntityLocation &pacmanLocation) {
     runningTimer--;
     if (runningTimer == 0) {
       state = EnemyStateChasing;
+      pathToBeFollowed.clear();
     }
     moveStrainghtRandom(gameGrid);
   } else {

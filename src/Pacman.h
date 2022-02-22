@@ -1,4 +1,5 @@
 #pragma once
+#include "DialogueBox.h"
 #include "Enemy.h"
 #include "GameState.h"
 #include "Structures.h"
@@ -33,6 +34,8 @@ private:
       *chunkGameover;
   Mix_Music *music;
 
+  DialogueBox pause, gameover, win;
+
 public:
   Pacman(StateMachine *s);
   ~Pacman();
@@ -43,5 +46,8 @@ public:
 
   void resetBoard();
   void pacmanGoToDefaultLocation();
+
   void togglePause();
+  void quit();
+  void returnToMainScreen();
 };

@@ -1,16 +1,18 @@
 #include "Pacman.h"
 #include "Game.h"
 
-Pacman::Pacman(StateMachine *s) : GameState(s), pacmanLocation(1, 1) {
+Pacman::Pacman(StateMachine *s)
+    : GameState(s), pacmanLocation(1, 1), pause("Pause"), gameover("Game Over"),
+      win("Win") {
   /*
   enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_RANDOM_STRAIGHT));
-  enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_DFS_LESS_BAD));
   enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_RANDOM));
   enemies.push_back(new Enemy(gameGrid, 10, 10, ENEMY_EUCLIDEAN));
   */
 
-  // enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_BFS));
+  enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_BFS));
   enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_ASTAR));
+  enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_DFS_LESS_BAD));
 
   for (int i = 0; i < 3; i++) {
     numTextures[i].loadSentence(std::to_string(i + 1), 128, Texture::White);
@@ -29,6 +31,10 @@ Pacman::Pacman(StateMachine *s) : GameState(s), pacmanLocation(1, 1) {
   chunkDeath = Mix_LoadWAV("assets/death.mp3");
   music = Mix_LoadMUS("assets/donkeyKongMusic.mp3");
   Mix_VolumeMusic(VOLUME_PLAYING);
+
+  pause.addOption("Continue", &Pacman::togglePause);
+  pause.addOption("Main Menu", &Pacman::returnToMainScreen);
+  pause.addOption("Quit", &Pacman::quit);
 }
 
 Pacman::~Pacman() {
@@ -132,6 +138,7 @@ void Pacman::render() {
   }
 
   if (state == StatePause) {
+    pause.render();
   }
 }
 void Pacman::update() {
@@ -268,10 +275,7 @@ void Pacman::handleInput(SDL_Event &e) {
       pacmanGoToDefaultLocation();
     }
   } else if (state == StatePause) {
-    if (e.type == SDL_KEYDOWN) {
-      if (e.key.keysym.sym == SDLK_ESCAPE)
-        togglePause();
-    }
+    pause.handleInput(e, this);
   }
 }
 // Maybe use a tempr to track the direction for some time
@@ -291,3 +295,6 @@ void Pacman::togglePause() {
     Mix_VolumeMusic(VOLUME_PAUSED);
   }
 }
+
+void Pacman::returnToMainScreen() { stateMachineRef->popTopState(); }
+void Pacman::quit() { stateMachineRef->quit(); }

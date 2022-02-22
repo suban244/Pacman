@@ -12,10 +12,14 @@ private:
   GameState *temp;
   bool isNewState;
   bool isReplacing;
+  bool popState;
 
 public:
   StateMachine();
   void AddState(GameState *newState, bool isReplacing = false);
+  void popTopState();
+  void quit();
+  bool isEmpty();
   void processStateChanges();
   GameState *getActiveState();
 };
