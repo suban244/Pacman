@@ -1,4 +1,5 @@
 #pragma once
+#include "DialogueBox.h"
 #include "GameState.h"
 #include <SDL2/SDL_mixer.h>
 
@@ -18,6 +19,7 @@ private:
   SDL_Rect soundTextRect;
 
   Mix_Music *music;
+  DialogueBox<MainScreen> dialogueBox;
 
 public:
   MainScreen(StateMachine *s);
@@ -26,4 +28,8 @@ public:
   void handleInput(SDL_Event &event) override;
   void update() override;
   void render() override;
+
+  void toggleMusic();
+  void toggleSoundEffects();
+  void quit();
 };

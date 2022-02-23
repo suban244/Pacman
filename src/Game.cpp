@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "MainScreen.h"
 #include "Texture.h"
 #include <SDL2/SDL_mixer.h>
 

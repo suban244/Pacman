@@ -34,7 +34,7 @@ private:
       *chunkGameover;
   Mix_Music *music;
 
-  DialogueBox pause, gameover, win;
+  DialogueBox<Pacman> pause, gameover, win;
 
   int score, scoringWindow, scoreFactor, oldScore;
   Texture scoreTexture, scoreAmountTexture;

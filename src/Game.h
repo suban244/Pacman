@@ -1,6 +1,5 @@
 #pragma once
 #define SDL_MAIN_HANDLED
-#include "MainScreen.h"
 #include "StateMachine.h"
 #include <iostream>
 

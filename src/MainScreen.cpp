@@ -29,6 +29,13 @@ MainScreen::MainScreen(StateMachine *s) : GameState(s) {
   soundText.loadFromFile("assets/sound.png");
 
   music = Mix_LoadMUS("assets/pacman_beginning.wav");
+  dialogueBox.addOption("Play!", &MainScreen::loadPacman);
+  dialogueBox.addOption(Game::playMusic ? "Music: On" : "Music: Off",
+                        &MainScreen::toggleMusic);
+  dialogueBox.addOption(Game::playSoundEffect ? "Sound Effects: On"
+                                              : "Sound Effects: Off",
+                        &MainScreen::toggleSoundEffects);
+  dialogueBox.addOption("Quit", &MainScreen::quit);
 }
 
 void MainScreen::loadPacman() {
@@ -47,8 +54,9 @@ void MainScreen::render() {
   SDL_SetRenderDrawColor(Game::renderer, 100, 100, 100, 255);
   SDL_RenderFillRect(Game::renderer, &startButtonRect);
   pacmanIcon.render(&pacmanIconRect);
-  text.render(&textRect);
-  soundText.render(&soundTextRect);
+  // text.render(&textRect);
+  // soundText.render(&soundTextRect);
+  dialogueBox.render();
 }
 
 void MainScreen::handleInput(SDL_Event &e) {
@@ -57,27 +65,26 @@ void MainScreen::handleInput(SDL_Event &e) {
   int x = e.button.x;
   int y = e.button.y;
   */
-  switch (e.type) {
-
-  case SDL_KEYDOWN:
-    switch (e.key.keysym.sym) {
-    case SDLK_RETURN:
-      loadPacman();
-      break;
-    case SDLK_m:
-      Mix_ResumeMusic();
-      Game::playMusic = true;
-      break;
-    case SDLK_n:
-      Mix_PauseMusic();
-      Game::playMusic = false;
-      break;
-    }
-
-    break;
-
-  default:
-    break;
-  }
+  dialogueBox.handleInput(e, this);
 }
 void MainScreen::update() {}
+void MainScreen::toggleMusic() {
+  Game::playMusic = !Game::playMusic;
+  if (Game::playMusic) {
+    dialogueBox.updateOptionMessage("Music: Off", "Music: On");
+    Mix_ResumeMusic();
+  } else {
+    dialogueBox.updateOptionMessage("Music: On", "Music: Off");
+    Mix_PauseMusic();
+  }
+}
+void MainScreen::toggleSoundEffects() {
+  Game::playSoundEffect = !Game::playSoundEffect;
+  if (Game::playSoundEffect) {
+    dialogueBox.updateOptionMessage("Sound Effects: Off", "Sound Effects: On");
+  } else {
+    dialogueBox.updateOptionMessage("Sound Effects: On", "Sound Effects: Off");
+  }
+}
+
+void MainScreen::quit() { stateMachineRef->quit(); }
