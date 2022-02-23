@@ -54,4 +54,6 @@ public:
   void togglePause();
   void quit();
   void returnToMainScreen();
+  void toggleMusic();
+  void toggleSoundEffects();
 };

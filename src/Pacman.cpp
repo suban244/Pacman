@@ -37,6 +37,12 @@ Pacman::Pacman(StateMachine *s)
   scoreAmountTexture.loadSentence(std::to_string(0), 32, Texture::White);
 
   pause.addOption("Continue", &Pacman::togglePause);
+  pause.addOption(Game::playMusic ? "Music: On" : "Music: Off",
+                  &Pacman::toggleMusic);
+  pause.addOption(Game::playSoundEffect ? "Sound Effects: On"
+                                        : "Sound Effects: Off",
+                  &Pacman::toggleSoundEffects);
+
   pause.addOption("Main Menu", &Pacman::returnToMainScreen);
   pause.addOption("Quit", &Pacman::quit);
 
@@ -56,6 +62,7 @@ Pacman::~Pacman() {
   Mix_FreeChunk(chunkDeath);
   Mix_FreeChunk(chunkEatEnemy);
   Mix_FreeChunk(chunkPower);
+  Mix_FreeChunk(chunkGameover);
 }
 
 int Pacman::pacmanSpriteSize = 80; // Becasue each sprite is 80 x 80
@@ -84,6 +91,9 @@ void Pacman::init() {
   startingStateTime = STARTING_STATE_TIME;
 
   Mix_PlayMusic(music, -1);
+  if (!Game::playMusic)
+    Mix_PauseMusic();
+
   scoreAmountTexture.loadSentence(std::to_string(score), 32, Texture::White);
   scoreAmountTexture.queryTexture(scoreAmountRect.w, scoreAmountRect.h);
   gameGrid.reset();
@@ -163,7 +173,7 @@ void Pacman::render() {
   scoreRect.x =
       gameGrid.startPosX + gameGrid.BLOCK_SIZE * GRID_WIDTH + boxRect.h;
   scoreTexture.render(&scoreRect);
-  scoreAmountRect.y = scoreRect.y + 20;
+  scoreAmountRect.y = scoreRect.y + scoreRect.h + 20;
   scoreAmountRect.x = scoreRect.x;
   scoreAmountTexture.render(&scoreAmountRect);
 
@@ -194,7 +204,8 @@ void Pacman::update() {
           resetBoard();
           break;
         } else {
-          Mix_PlayChannel(-1, chunkEatEnemy, 0);
+          if (Game::playSoundEffect)
+            Mix_PlayChannel(-1, chunkEatEnemy, 0);
 
           if (scoringWindow >= 0 && e->state != EnemyStateReseting) {
             score += scoreFactor;
@@ -215,10 +226,14 @@ void Pacman::update() {
 
       NodeState nstate =
           gameGrid.consume(pacmanLocation.blockY, pacmanLocation.blockX);
-      if (nstate == NodeStatePoint)
-        Mix_PlayChannelTimed(-1, chunkChomp, 0, 300);
+      if (nstate == NodeStatePoint) {
+        if (Game::playSoundEffect)
+          Mix_PlayChannelTimed(-1, chunkChomp, 0, 300);
+      }
+
       else if (nstate == NodeStatePower)
-        Mix_PlayChannel(-1, chunkPower, 0);
+        if (Game::playSoundEffect)
+          Mix_PlayChannel(-1, chunkPower, 0);
 
       if (nstate == NodeStatePower) {
         for (Enemy *e : enemies) {
@@ -279,9 +294,11 @@ void Pacman::resetBoard() {
 
   if (lives == 0) {
     state = StateLost;
-    Mix_PlayChannel(-1, chunkGameover, 0);
+    if (Game::playSoundEffect)
+      Mix_PlayChannel(-1, chunkGameover, 0);
   } else {
-    Mix_PlayChannel(-1, chunkDeath, 0);
+    if (Game::playSoundEffect)
+      Mix_PlayChannel(-1, chunkDeath, 0);
   }
 }
 
@@ -349,3 +366,21 @@ void Pacman::togglePause() {
 
 void Pacman::returnToMainScreen() { stateMachineRef->popTopState(); }
 void Pacman::quit() { stateMachineRef->quit(); }
+void Pacman::toggleMusic() {
+  Game::playMusic = !Game::playMusic;
+  if (Game::playMusic) {
+    pause.updateOptionMessage("Music: Off", "Music: On");
+    Mix_ResumeMusic();
+  } else {
+    pause.updateOptionMessage("Music: On", "Music: Off");
+    Mix_PauseMusic();
+  }
+}
+void Pacman::toggleSoundEffects() {
+  Game::playSoundEffect = !Game::playSoundEffect;
+  if (Game::playSoundEffect) {
+    pause.updateOptionMessage("Sound Effects: Off", "Sound Effects: On");
+  } else {
+    pause.updateOptionMessage("Sound Effects: On", "Sound Effects: Off");
+  }
+}

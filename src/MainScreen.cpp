@@ -40,6 +40,8 @@ void MainScreen::init() {
   //   startButtonRect.y = 50;
   Mix_VolumeMusic(4);
   Mix_PlayMusic(music, -1);
+  if (!Game::playMusic)
+    Mix_PauseMusic();
 }
 void MainScreen::render() {
   SDL_SetRenderDrawColor(Game::renderer, 100, 100, 100, 255);

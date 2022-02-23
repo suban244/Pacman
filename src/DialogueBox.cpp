@@ -29,6 +29,23 @@ void Button::render(bool isSelected) {
     texture.render(&textureRect);
 }
 
+void Button::updateName(std::string newName, SDL_Rect &baseRect) {
+  name = newName;
+  texture.loadSentence(name, 24, Texture::White);
+  textureSelected.loadSentence(name, 28, Texture::Red);
+
+  texture.queryTexture(textureRect.w, textureRect.h);
+  textureSelected.queryTexture(textureSelectedRect.w, textureSelectedRect.h);
+
+  textureRect.x = WINDOW_WIDTH / 2 - textureRect.w / 2;
+  textureSelectedRect.x = WINDOW_WIDTH / 2 - textureSelectedRect.w / 2;
+
+  if (textureSelectedRect.w + 2 * BUFFER > baseRect.w) {
+    baseRect.x = WINDOW_WIDTH / 2 - textureSelectedRect.w / 2 - BUFFER;
+    baseRect.w = textureSelectedRect.w + 2 * BUFFER;
+  }
+}
+
 DialogueBox::DialogueBox(std::string name) {
   int centerX = WINDOW_WIDTH / 2;
   int centerY = WINDOW_HEIGHT / 2;
@@ -54,6 +71,14 @@ DialogueBox::~DialogueBox() {
 }
 void DialogueBox::addOption(std::string option, Callbacks onClick) {
   buttons.push_back(new Button(option, onClick, baseRect));
+  // Move items up a little
+  nameRect.y -= buttons.back()->textureSelectedRect.h / 2;
+  baseRect.y -= buttons.back()->textureSelectedRect.h / 2;
+  for (size_t i = 0; i < buttons.size(); i++) {
+    buttons[i]->textureRect.y -= buttons.back()->textureSelectedRect.h / 2;
+    buttons[i]->textureSelectedRect.y -=
+        buttons.back()->textureSelectedRect.h / 2;
+  }
 }
 void DialogueBox::render() {
   SDL_SetRenderDrawColor(Game::renderer, 20, 20, 20, 255);
@@ -77,12 +102,24 @@ void DialogueBox::handleInput(SDL_Event &e, Pacman *pacmanObject) {
     case SDLK_w:
       if (buttonIndex > 0)
         buttonIndex--;
+      else
+        buttonIndex = buttons.size() - 1;
       break;
     case SDLK_s:
       if (buttonIndex < buttons.size() - 1)
         buttonIndex++;
+      else
+        buttonIndex = 0;
     default:
       break;
     }
+  }
+}
+
+void DialogueBox::updateOptionMessage(std::string oldMessage,
+                                      std::string newMessage) {
+  for (size_t i = 0; i < buttons.size(); i++) {
+    if (oldMessage == buttons[i]->name)
+      buttons[i]->updateName(newMessage, baseRect);
   }
 }

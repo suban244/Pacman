@@ -11,8 +11,10 @@ struct Button {
   Callbacks onClick;
   Texture texture, textureSelected;
   SDL_Rect textureRect, textureSelectedRect;
+
   Button(std::string name, Callbacks onClick, SDL_Rect &baseRect);
   void render(bool isSelected = false);
+  void updateName(std::string newName, SDL_Rect &baseRect);
 };
 
 class DialogueBox {
@@ -28,6 +30,7 @@ public:
   DialogueBox(std::string name);
   ~DialogueBox();
   void addOption(std::string option, Callbacks onClick);
+  void updateOptionMessage(std::string oldMessage, std::string newMessage);
 
   void render();
   void update();

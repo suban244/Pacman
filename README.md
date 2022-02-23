@@ -15,12 +15,11 @@
 
 * Option Menu
 * Enemy Timer
-* Weird Bug after game over
 
 * Check for memory leaks
 * AStar Search
-  * Heap data structure
-  * Priority Queue
+  * ~~Heap data structure~~
+  * ~~Priority Queue~~
   * Hash table (map)
 
 
