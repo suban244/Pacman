@@ -4,15 +4,14 @@
 Pacman::Pacman(StateMachine *s)
     : GameState(s), pacmanLocation(1, 1), pause("Pause"), gameover("Game Over"),
       win("Win") {
+  enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_ELEPHANT));
+  enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_FAR_SIGHTED));
+  enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_MEEP));
+  enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_HELPER));
   /*
-  enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_RANDOM_STRAIGHT));
-  enemies.push_back(new Enemy(gameGrid, 1, 1, ENEMY_RANDOM));
-  enemies.push_back(new Enemy(gameGrid, 10, 10, ENEMY_EUCLIDEAN));
-  */
 
-  enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_BFS));
-  enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_ASTAR));
-  enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_DFS_LESS_BAD));
+  // enemies.push_back(new Enemy(gameGrid, 12, 10, ENEMY_ASTAR));
+  */
 
   for (int i = 0; i < 3; i++) {
     numTextures[i].loadSentence(std::to_string(i + 1), 128, Texture::White);
@@ -312,15 +311,19 @@ void Pacman::handleInput(SDL_Event &e) {
     case SDL_KEYDOWN:
       switch (e.key.keysym.sym) {
       case SDLK_w:
+      case SDLK_UP:
         pacmanNextDirection = DirectionUp;
         break;
       case SDLK_a:
+      case SDLK_LEFT:
         pacmanNextDirection = DirectionLeft;
         break;
       case SDLK_s:
+      case SDLK_DOWN:
         pacmanNextDirection = DirectionDown;
         break;
       case SDLK_d:
+      case SDLK_RIGHT:
         pacmanNextDirection = DirectionRight;
         break;
       case SDLK_ESCAPE:

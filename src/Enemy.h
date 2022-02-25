@@ -12,14 +12,26 @@
 #include <vector>
 #define ENTITY_SIZE 14
 #define ENEMY_RUNNING_TIMER_MAX 600
+#define ENEMY_FAR_SIGHTED_THRESHOLD 5
+
 enum EnemyType {
+  /*
   ENEMY_RANDOM,
   ENEMY_RANDOM_STRAIGHT,
   ENEMY_DFS_BAD,
   ENEMY_DFS_LESS_BAD,
   ENEMY_BFS,
   ENEMY_EUCLIDEAN,
-  ENEMY_ASTAR
+  ENEMY_ASTAR,
+  */
+
+  ENEMY_MEEP,        // He cute, likes pacman, very fast use DFS_LESS_BAD
+  ENEMY_FAR_SIGHTED, // NORMAL speed, when pacman to enemy distance less than
+                     // thresshold, random movement
+  ENEMY_ELEPHANT,    // SLOW BUT SUPER ACCURATW
+  ENEMY_HELPER,      // Path finds to a square near pacman
+  // ENEMY_MINIQ        // Randomly Mimics a enemy type
+
 };
 
 enum EnemyState { EnemyStateRunning, EnemyStateChasing, EnemyStateReseting };
@@ -161,4 +173,10 @@ private:
    */
   void reset();
   bool inBaseLocation();
+
+  void moveEnemyMeep(Grid &gameGrid, EntityLocation &pacmanLocation);
+  void moveEnemyFarSighted(Grid &gameGrid, EntityLocation &pacmanLocation);
+  void moveEnemyElephant(Grid &gameGrid, EntityLocation &pacmanLocation);
+  void moveEnemyHelper(Grid &gameGrid, EntityLocation &pacmanLocation);
+  void moveEnemyMiniq(Grid &gameGrid, EntityLocation &pacmanLocation);
 };

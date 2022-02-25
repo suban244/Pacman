@@ -153,6 +153,9 @@ public:
     return nodes[location.blockY][location.blockX].state != 0;
   }
   bool isValidGridLocation(int i, int j) const {
+    if (i < 0 || j < 0 || i >= GRID_HEIGHT || j >= GRID_WIDTH)
+      return false;
+
     return nodes[i][j].state != 0;
   }
 

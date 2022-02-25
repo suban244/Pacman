@@ -9,7 +9,8 @@ bool buttonPress(SDL_Rect &rect, int x, int y) {
 
 MainScreen::~MainScreen() { Mix_FreeMusic(music); }
 
-MainScreen::MainScreen(StateMachine *s) : GameState(s) {
+MainScreen::MainScreen(StateMachine *s)
+    : GameState(s), dialogueBox("", 32, {0, 0, 0, 255}) {
   pacmanIconRect.x = 400;
   pacmanIconRect.y = 30;
   pacmanIconRect.w = 500;

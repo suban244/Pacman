@@ -10,7 +10,19 @@ Enemy::Enemy(Grid &gameGrid, int i, int j, EnemyType e)
 
   destRect.w = destRect.h = ENTITY_SIZE;
 
-  texture.loadFromFile("assets/enemy.png");
+  switch (e) {
+  case ENEMY_ELEPHANT:
+    texture.loadFromFile("assets/Elephant.png");
+    break;
+  case ENEMY_HELPER:
+    texture.loadFromFile("assets/Helper.png");
+    break;
+  case ENEMY_MEEP:
+    texture.loadFromFile("assets/Meep.png");
+    break;
+  case ENEMY_FAR_SIGHTED:
+    texture.loadFromFile("assets/FarSighted.png");
+  }
   std::srand(std::time(nullptr));
 }
 
@@ -29,29 +41,18 @@ void Enemy::update(Grid &gameGrid, EntityLocation &pacmanLocation) {
   // DFS_search(gameGrid, pacmanLocation);
   if (state == EnemyStateChasing) {
     switch (type) {
-    case ENEMY_RANDOM:
-      moveFullyRandom(gameGrid);
-      break;
-    case ENEMY_RANDOM_STRAIGHT:
-      moveStrainghtRandom(gameGrid);
+    case ENEMY_MEEP:
+      moveEnemyMeep(gameGrid, pacmanLocation);
       break;
 
-    case ENEMY_DFS_BAD:
-      moveWithDFS(gameGrid, pacmanLocation);
+    case ENEMY_ELEPHANT:
+      moveEnemyElephant(gameGrid, pacmanLocation);
       break;
-
-    case ENEMY_DFS_LESS_BAD:
-      moveWithDFS2(gameGrid, pacmanLocation);
+    case ENEMY_FAR_SIGHTED:
+      moveEnemyFarSighted(gameGrid, pacmanLocation);
       break;
-
-    case ENEMY_BFS:
-      moveWithBFS(gameGrid, pacmanLocation);
-      break;
-    case ENEMY_EUCLIDEAN:
-      moveWithEuclideanDistance(gameGrid, pacmanLocation);
-      break;
-    case ENEMY_ASTAR:
-      moveWithAStar(gameGrid, pacmanLocation);
+    case ENEMY_HELPER:
+      moveEnemyHelper(gameGrid, pacmanLocation);
       break;
     default:
       moveFullyRandom(gameGrid);
@@ -609,3 +610,41 @@ void Enemy::run() {
   state = EnemyStateRunning;
   runningTimer = ENEMY_RUNNING_TIMER_MAX;
 }
+
+void Enemy::moveEnemyMeep(Grid &gameGrid, EntityLocation &pacmanLocation) {
+  moveWithDFS2(gameGrid, pacmanLocation);
+  int x = 1 + std::rand() / ((RAND_MAX + 1u) / 2);
+  if (x == 1)
+    moveWithDFS2(gameGrid, pacmanLocation);
+}
+
+void Enemy::moveEnemyFarSighted(Grid &gameGrid,
+                                EntityLocation &pacmanLocation) {
+  if (calcEuclideanDistance(pacmanLocation.blockX, pacmanLocation.blockY,
+                            location.blockX,
+                            location.blockY) < ENEMY_FAR_SIGHTED_THRESHOLD) {
+    moveStrainghtRandom(gameGrid);
+  } else
+    moveWithAStar(gameGrid, pacmanLocation);
+}
+void Enemy::moveEnemyElephant(Grid &gameGrid, EntityLocation &pacmanLocation) {
+  int x = 1 + std::rand() / ((RAND_MAX + 1u) / 100);
+  if (x <= 40)
+    return;
+  moveWithAStar(gameGrid, pacmanLocation);
+}
+void Enemy::moveEnemyHelper(Grid &gameGrid, EntityLocation &pacmanLocation) {
+  while (true) {
+    int x = -2 + std::rand() / ((RAND_MAX + 1u) / 5);
+    int y = -2 + std::rand() / ((RAND_MAX + 1u) / 5);
+
+    if (gameGrid.isValidGridLocation(pacmanLocation.blockY + y,
+                                     x + pacmanLocation.blockX)) {
+      EntityLocation a =
+          EntityLocation(pacmanLocation.blockX + x, pacmanLocation.blockY + y);
+      moveWithAStar(gameGrid, a);
+      break;
+    }
+  }
+}
+void Enemy::moveEnemyMiniq(Grid &gameGrid, EntityLocation &pacmanLocation) {}

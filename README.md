@@ -12,9 +12,7 @@
   * ~~Gameover~~
   * Pause/Unpause
   * Wining
-
-* Option Menu
-* Enemy Timer
+* Random score things 
 
 * Check for memory leaks
 * AStar Search

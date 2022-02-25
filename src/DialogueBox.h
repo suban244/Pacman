@@ -13,11 +13,13 @@ template <typename T> struct Button {
   T onClick;
   Texture texture, textureSelected;
   SDL_Rect textureRect, textureSelectedRect;
+  int buttonFontSizebase;
 
-  Button(std::string name, T onClick, SDL_Rect &baseRect)
-      : name(name), onClick(onClick) {
-    texture.loadSentence(name, 24, Texture::White);
-    textureSelected.loadSentence(name, 28, Texture::Red);
+  Button(std::string name, T onClick, SDL_Rect &baseRect,
+         int buttonFontSizebase = 24)
+      : name(name), onClick(onClick), buttonFontSizebase(buttonFontSizebase) {
+    texture.loadSentence(name, buttonFontSizebase, Texture::White);
+    textureSelected.loadSentence(name, buttonFontSizebase + 4, Texture::Red);
 
     texture.queryTexture(textureRect.w, textureRect.h);
     textureSelected.queryTexture(textureSelectedRect.w, textureSelectedRect.h);
@@ -42,8 +44,8 @@ template <typename T> struct Button {
   }
   void updateName(std::string newName, SDL_Rect &baseRect) {
     name = newName;
-    texture.loadSentence(name, 24, Texture::White);
-    textureSelected.loadSentence(name, 28, Texture::Red);
+    texture.loadSentence(name, buttonFontSizebase, Texture::White);
+    textureSelected.loadSentence(name, buttonFontSizebase + 4, Texture::Red);
 
     texture.queryTexture(textureRect.w, textureRect.h);
     textureSelected.queryTexture(textureSelectedRect.w, textureSelectedRect.h);
@@ -67,13 +69,15 @@ template <typename baseClass> class DialogueBox {
 
   std::vector<Button<void (baseClass::*)()> *> buttons;
   size_t buttonIndex;
+  int buttonFontSizebase;
 
   SDL_Colour backgroundColor;
 
 public:
-  DialogueBox(std::string name = "",
+  DialogueBox(std::string name = "", int buttonFontSizebase = 24,
               SDL_Color backgroundColor = {20, 20, 20, 255})
-      : name(name), backgroundColor(backgroundColor) {
+      : name(name), buttonFontSizebase(buttonFontSizebase),
+        backgroundColor(backgroundColor) {
     int centerX = WINDOW_WIDTH / 2;
     int centerY = WINDOW_HEIGHT / 2;
 
@@ -99,8 +103,8 @@ public:
     }
   }
   void addOption(std::string option, void (baseClass::*onClick)()) {
-    buttons.push_back(
-        new Button<void (baseClass::*)()>(option, onClick, baseRect));
+    buttons.push_back(new Button<void (baseClass::*)()>(
+        option, onClick, baseRect, buttonFontSizebase));
     // Move items up a little
     nameRect.y -= buttons.back()->textureSelectedRect.h / 2;
     baseRect.y -= buttons.back()->textureSelectedRect.h / 2;
@@ -144,12 +148,14 @@ public:
         (ptr->*buttons.front()->onClick)();
         break;
       case SDLK_w:
+      case SDLK_UP:
         if (buttonIndex > 0)
           buttonIndex--;
         else
           buttonIndex = buttons.size() - 1;
         break;
       case SDLK_s:
+      case SDLK_DOWN:
         if (buttonIndex < buttons.size() - 1)
           buttonIndex++;
         else
