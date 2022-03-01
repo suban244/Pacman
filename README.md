@@ -31,15 +31,15 @@ Can you dodge all of them and collect all the points ?
 - Download [SDL2](https://www.libsdl.org/download-2.0.php),[SDL2_image](https://www.libsdl.org/projects/SDL_image/),[SDL2_mixer](https://www.libsdl.org/projects/SDL_mixer/),[SDL2_ttf](https://www.dll4free.com/sdl2_ttf.dll.html) 
 - Extract and store in a folder
 - Open  ``Pacman.sln``  
-- Open project properties
-- Set **Project Configuration** to **All configuration**
-- Set **Platform** to **Active(x64)**
-- In **General** for *C/C++*
-  - Set the **Additional include directory** to *(Local Disk):\(SDL directory name)\include*
-- Open **General** for *Linker*
-  - Set the  **Additional Library Directory** to *(Local Disk):\(SDL directory name)\lib*
-- Open **Input** for *Linker*
-  - Set the **Additional Dependencies** to ``SDL2_image.lib,SDL2_ttf.lib,SDL2_mixer.lib,SDL2.lib,SDL2main.lib``
+- Open **_project properties_**
+- Set **_Project Configuration_** to **_All configuration_**
+- Set **_Platform_** to **Active(x64)**
+- In **_General_** for *C/C++*
+  - Set the **_Additional include directory_** to *(Local Disk):\(SDL directory name)\include*
+- Open **_General_** for *Linker*
+  - Set the  **_Additional Library Directory_** to *(Local Disk):\(SDL directory name)\lib*
+- Open **_Input_** for *Linker*
+  - Set the **_Additional Dependencies_** to ``SDL2_image.lib,SDL2_ttf.lib,SDL2_mixer.lib,SDL2.lib,SDL2main.lib``
 - Now Run the project
 
 ## Screenshots
