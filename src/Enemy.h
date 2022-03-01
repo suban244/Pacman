@@ -15,16 +15,6 @@
 #define ENEMY_FAR_SIGHTED_THRESHOLD 5
 
 enum EnemyType {
-  /*
-  ENEMY_RANDOM,
-  ENEMY_RANDOM_STRAIGHT,
-  ENEMY_DFS_BAD,
-  ENEMY_DFS_LESS_BAD,
-  ENEMY_BFS,
-  ENEMY_EUCLIDEAN,
-  ENEMY_ASTAR,
-  */
-
   ENEMY_MEEP,        // He cute, likes pacman, very fast use DFS_LESS_BAD
   ENEMY_FAR_SIGHTED, // NORMAL speed, when pacman to enemy distance less than
                      // thresshold, random movement

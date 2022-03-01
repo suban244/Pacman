@@ -1,4 +1,5 @@
 #include "Enemy.h"
+#include "DataStructures.h"
 #include "Structures.h"
 
 float calcEuclideanDistance(int x1, int y1, int x2, int y2) {
@@ -477,28 +478,34 @@ Direction Enemy::AStarSearch(Grid &gameGrid, EntityLocation &pacmanLocation,
   /*
    * TODO
    */
+
   pathFollowed.clear();
   Node *destinationNode =
       gameGrid.getNode(pacmanLocation.blockY, pacmanLocation.blockX);
 
-  std::unordered_map<Node *, Node *> parentMap;
+  HashMap<Node *, Node *> parentMap;
   std::vector<Node *> parentMapKeys; // Vector of all the keys of parent map
 
   auto reconstructPath = [&pathFollowed, &parentMap, &parentMapKeys](Node *n) {
     pathFollowed.push_back(n);
     while (vectorContainsNode(parentMapKeys, n)) {
-      n = parentMap[n];
-      if (n == nullptr)
+      try {
+        n = parentMap.at(n);
+      } catch (std::out_of_range &) {
         break;
+      };
+
       pathFollowed.push_back(n);
     }
-    n = parentMap[n];
-    if (n)
+    try {
+      n = parentMap.at(n);
       pathFollowed.push_back(n);
+    } catch (std::out_of_range &) {
+    }
   };
 
-  std::unordered_map<Node *, int> gScoreMap; // Cheapest path fron start to n
-  std::unordered_map<Node *, int> fscoreMap; // gscore(n) + h(n)
+  HashMap<Node *, int> gScoreMap; // Cheapest path fron start to n
+  HashMap<Node *, int> fscoreMap; // gscore(n) + h(n)
 
   auto gScore = [&gScoreMap](Node *n) {
     try {
@@ -520,20 +527,12 @@ Direction Enemy::AStarSearch(Grid &gameGrid, EntityLocation &pacmanLocation,
            abs(n->i - pacmanLocation.blockY);
   };
 
-  /*
-  auto calcCost = [&parentMap, h](Node *n, EntityLocation pacmanLocation) {
-    float cost = 0;
-    Node *temp = n;
-    for (; temp != nullptr; temp = parentMap.at(n))
-      cost++;
-    cost += h(n);
-    return cost;
-  };
-  */
-
   auto cmp = [fscore](Node *n1, Node *n2) { return fscore(n1) > fscore(n2); };
 
+  /*
   std::priority_queue<Node *, std::vector<Node *>, decltype(cmp)> frontier(cmp);
+  */
+  MinHeap<Node *> frontier(cmp);
 
   Node *temp, *neighbor;
   int nodesExplored = 0;
