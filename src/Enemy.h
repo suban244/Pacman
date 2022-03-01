@@ -20,7 +20,6 @@ enum EnemyType {
                      // thresshold, random movement
   ENEMY_ELEPHANT,    // SLOW BUT SUPER ACCURATW
   ENEMY_HELPER,      // Path finds to a square near pacman
-
 };
 
 enum EnemyState { EnemyStateRunning, EnemyStateChasing, EnemyStateReseting };
@@ -103,6 +102,9 @@ private:
 
   Direction AStarSearch(Grid &gameGrid, EntityLocation &pacmanLocation,
                         std::vector<Node *> &pathFollowed);
+
+  Direction Dijkstra(Grid &gameGrid, EntityLocation &pacmanLocation,
+                     std::vector<Node *> &pathFollowed);
 
   /*
    * Completely handles movement

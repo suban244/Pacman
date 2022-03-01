@@ -96,7 +96,7 @@ public:
   bool empty() { return heap.size() == 0; }
 
   void buildHeap() {
-    for (size_t i = heap.size() / 2 + 1; i > 0; i--) {
+    for (size_t i = heap.size() / 2 + 2; i > 0; i--) {
       heapify(i - 1);
     }
   }
