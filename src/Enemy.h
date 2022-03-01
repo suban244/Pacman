@@ -20,7 +20,6 @@ enum EnemyType {
                      // thresshold, random movement
   ENEMY_ELEPHANT,    // SLOW BUT SUPER ACCURATW
   ENEMY_HELPER,      // Path finds to a square near pacman
-  // ENEMY_MINIQ        // Randomly Mimics a enemy type
 
 };
 
@@ -168,5 +167,4 @@ private:
   void moveEnemyFarSighted(Grid &gameGrid, EntityLocation &pacmanLocation);
   void moveEnemyElephant(Grid &gameGrid, EntityLocation &pacmanLocation);
   void moveEnemyHelper(Grid &gameGrid, EntityLocation &pacmanLocation);
-  void moveEnemyMiniq(Grid &gameGrid, EntityLocation &pacmanLocation);
 };

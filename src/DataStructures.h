@@ -96,8 +96,8 @@ public:
   bool empty() { return heap.size() == 0; }
 
   void buildHeap() {
-    for (size_t i = heap.size() / 2; i >= 0; i--) {
-      heapify(i);
+    for (size_t i = heap.size() / 2 + 1; i > 0; i--) {
+      heapify(i - 1);
     }
   }
 };
@@ -112,8 +112,8 @@ template <typename Key, typename Value> struct HashMap {
   };
 
 private:
-  int size = 20;
-  Node *keys[20];
+  int size = 19;
+  Node *keys[19];
 
 public:
   HashMap() {

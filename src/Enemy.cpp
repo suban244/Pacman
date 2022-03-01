@@ -573,10 +573,8 @@ Direction Enemy::AStarSearch(Grid &gameGrid, EntityLocation &pacmanLocation,
       }
     }
   }
-  /*
   std::cout << "A* Nodes Explored: " << nodesExplored << " "
             << "Path of length:" << pathFollowed.size() << std::endl;
-            */
 
   if (pathFollowed.size() > 1) {
     return Grid::FindDirection(pathFollowed[pathFollowed.size() - 1],
@@ -646,4 +644,3 @@ void Enemy::moveEnemyHelper(Grid &gameGrid, EntityLocation &pacmanLocation) {
     }
   }
 }
-void Enemy::moveEnemyMiniq(Grid &gameGrid, EntityLocation &pacmanLocation) {}
