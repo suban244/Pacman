@@ -40,7 +40,7 @@ Can you dodge all of them and collect all the points ?
   - Set the  **Additional Library Directory** to *(Local Disk):\(SDL directory name)\lib*
 - Open **Input** for *Linker*
   - Set the **Additional Dependencies** to ``SDL2_image.lib,SDL2_ttf.lib,SDL2_mixer.lib,SDL2.lib,SDL2main.lib``
--Now Run the project
+- Now Run the project
 
 
 
