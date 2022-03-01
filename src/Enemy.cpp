@@ -573,8 +573,10 @@ Direction Enemy::AStarSearch(Grid &gameGrid, EntityLocation &pacmanLocation,
       }
     }
   }
+  /*
   std::cout << "A* Nodes Explored: " << nodesExplored << " "
             << "Path of length:" << pathFollowed.size() << std::endl;
+            */
 
   if (pathFollowed.size() > 1) {
     return Grid::FindDirection(pathFollowed[pathFollowed.size() - 1],
@@ -632,8 +634,8 @@ void Enemy::moveEnemyElephant(Grid &gameGrid, EntityLocation &pacmanLocation) {
 }
 void Enemy::moveEnemyHelper(Grid &gameGrid, EntityLocation &pacmanLocation) {
   while (true) {
-    int x = -2 + std::rand() / ((RAND_MAX + 1u) / 5);
-    int y = -2 + std::rand() / ((RAND_MAX + 1u) / 5);
+    int x = -4 + std::rand() / ((RAND_MAX + 1u) / 9);
+    int y = -4 + std::rand() / ((RAND_MAX + 1u) / 9);
 
     if (gameGrid.isValidGridLocation(pacmanLocation.blockY + y,
                                      x + pacmanLocation.blockX)) {

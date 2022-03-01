@@ -96,9 +96,12 @@ void Pacman::init() {
   scoreAmountTexture.loadSentence(std::to_string(score), 32, Texture::White);
   scoreAmountTexture.queryTexture(scoreAmountRect.w, scoreAmountRect.h);
   gameGrid.reset();
+  pacmanGoToDefaultLocation();
 }
 void Pacman::render() {
-  Uint8 alpha = state == StatePause ? 100 : 255;
+  Uint8 alpha = (state == StatePause || state == StateWon || state == StateLost)
+                    ? 100
+                    : 255;
 
   SDL_Rect boxRect;
   boxRect.x = gameGrid.startPosX;
@@ -180,6 +183,8 @@ void Pacman::render() {
     pause.render();
   } else if (state == StateLost) {
     gameover.render();
+  } else if (state == StateWon) {
+    win.render();
   }
 }
 void Pacman::update() {
@@ -337,16 +342,12 @@ void Pacman::handleInput(SDL_Event &e) {
     default:
       break;
     }
-  } else if (state == StateWon) {
-    if (e.type == SDL_KEYDOWN) {
-      gameGrid.reset();
-      init();
-      pacmanGoToDefaultLocation();
-    }
   } else if (state == StatePause) {
     pause.handleInput(e, this);
   } else if (state == StateLost) {
     gameover.handleInput(e, this);
+  } else if (state == StateWon) {
+    win.handleInput(e, this);
   }
 }
 // Maybe use a tempr to track the direction for some time

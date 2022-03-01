@@ -12,7 +12,7 @@
 #include <vector>
 #define ENTITY_SIZE 14
 #define ENEMY_RUNNING_TIMER_MAX 600
-#define ENEMY_FAR_SIGHTED_THRESHOLD 5
+#define ENEMY_FAR_SIGHTED_THRESHOLD 8
 
 enum EnemyType {
   ENEMY_MEEP,        // He cute, likes pacman, very fast use DFS_LESS_BAD
