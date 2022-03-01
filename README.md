@@ -42,6 +42,16 @@ Can you dodge all of them and collect all the points ?
   - Set the **Additional Dependencies** to ``SDL2_image.lib,SDL2_ttf.lib,SDL2_mixer.lib,SDL2.lib,SDL2main.lib``
 - Now Run the project
 
+##Screenshots
+
+1. Main Screen
+
+![This is an image](https://github.com/suban244/Pacman/blob/main/Screenshots/screenshot1.png)
+
+2. Game Screen
+
+![This is an image](https://github.com/suban244/Pacman/blob/main/Screenshots/screenshot2.png)
+
 
 
 
