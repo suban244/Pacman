@@ -28,7 +28,7 @@ Can you dodge all of them and collect all the points ?
 
 ### Windows
 
-- Download [SDL2]((https://www.libsdl.org/download-2.0.php)),[SDL2_image](https://www.libsdl.org/projects/SDL_image/),[SDL2_mixer](https://www.libsdl.org/projects/SDL_mixer/),[SDL2_ttf](https://www.dll4free.com/sdl2_ttf.dll.html) 
+- Download [SDL2](https://www.libsdl.org/download-2.0.php),[SDL2_image](https://www.libsdl.org/projects/SDL_image/),[SDL2_mixer](https://www.libsdl.org/projects/SDL_mixer/),[SDL2_ttf](https://www.dll4free.com/sdl2_ttf.dll.html) 
 - Extract and store in a folder
 - Open the ``pacman.sln``  
 - Open project properties
